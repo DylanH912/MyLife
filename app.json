@@ -1,0 +1,57 @@
+{
+  "expo": {
+    "name": "MyLife",
+    "slug": "MyLife",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "mylife",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.suttonzimmerman.appMyLife"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.suttonzimmerman.appMyLife"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6730d29c-5ff1-4b42-a98c-a89d63015b78"
+      }
+    },
+    "owner": "suttonzimmerman",
+    "updates": {
+      "url": "https://u.expo.dev/6730d29c-5ff1-4b42-a98c-a89d63015b78"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
+  }
+}
