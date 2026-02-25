@@ -1,0 +1,5 @@
+-npm install expo
+-npm install react-native-camera
+-npm install react-native-vision-camera
+-npm audit fix
+-npm run ios or android
