@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Camera, CameraPermissionStatus, getCameraDevice, useCameraDevices } from 'react-native-vision-camera';
 
+// Manages camera permissions and set-up
+
 export type CameraViewProps = {
     onPhotoTaken?: (uri: string) => void;
     onCancel?: () => void;
