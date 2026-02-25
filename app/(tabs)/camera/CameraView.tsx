@@ -36,11 +36,11 @@ export function CameraView({ onPhotoTaken, onCancel }: CameraViewProps) {
     const takePhoto = async () => {
         if (!camera.current) return;
 
-    const photo = await camera.current.takePhoto({
-        flash: 'off',
-    });
+        const photo = await camera.current.takePhoto({
+            flash: 'off',
+        });
 
-    onPhotoTaken?.(`file://${photo.path}`);
+        onPhotoTaken?.(`file://${photo.path}`);
     };
 
     return (

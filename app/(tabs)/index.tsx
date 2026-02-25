@@ -1,5 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import CameraScreen from "./camera";
+import { CameraView } from './camera/CameraView';
 
 export default function Index() {
     const takePicture = () => {
@@ -9,7 +11,9 @@ export default function Index() {
     return (
         <View style={styles.container}>
 
-            <Text style={styles.text}>Home Screen</Text>
+            <View style={{flex: 1}}>
+                <CameraView />
+            </View>
 
             {/* Snapchat Style Camera Button */}
             <TouchableOpacity style={styles.cameraButton} onPress={takePicture}>
