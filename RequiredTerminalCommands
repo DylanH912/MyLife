@@ -3,3 +3,4 @@
 -npm install react-native-vision-camera
 -npm audit fix
 -npm run ios or android
+-npm install react-native-worklets-core

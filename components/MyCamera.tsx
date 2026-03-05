@@ -1,6 +1,6 @@
-import React, {forwardRef, useEffect,useImperativeHandle,useRef,useState,} from "react";
+import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState,} from "react";
 import { StyleSheet, Text, View } from "react-native";
-import {Camera,CameraPermissionStatus,useCameraDevices,} from "react-native-vision-camera";
+import { Camera, CameraPermissionStatus, useCameraDevices,} from "react-native-vision-camera";
 
 export type CameraViewProps = {};
 
@@ -12,9 +12,7 @@ export const CameraView = forwardRef<CameraViewHandle, CameraViewProps>(
   (props, ref) => {
     const camera = useRef<Camera>(null);
     const devices = useCameraDevices();
-    const device = Array.isArray(devices)
-      ? devices.find((d) => d.position === "back")
-      : (devices as any).back;
+    const device = devices.find((d) => d.position === "back");
 
     const [hasPermission, setHasPermission] = useState(false);
 
@@ -22,10 +20,10 @@ export const CameraView = forwardRef<CameraViewHandle, CameraViewProps>(
       (async () => {
         const permission: CameraPermissionStatus =
           await Camera.requestCameraPermission();
-        // Camera.requestCameraPermission() returns "granted" | "denied"
         setHasPermission(permission === "granted");
-    })();
+      })();
     }, []);
+
     useImperativeHandle(ref, () => ({
       takePhoto: async () => {
         if (!camera.current) return;

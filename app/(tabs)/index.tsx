@@ -1,18 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import CameraScreen from "./camera";
-import { CameraView } from './camera/CameraView';
-import React, { useRef } from "react";
+import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useRef } from "react";
+import { CameraView, CameraViewHandle } from "../../components/MyCamera";
 
 export default function Index() {
-  const cameraRef = useRef<any>(null);
+  const cameraRef = useRef<CameraViewHandle>(null);
 
   const takePicture = async () => {
-    if (cameraRef.current) {
-      const photo = await cameraRef.current.takePhoto({
-        flash: "off",
-      });
+    const photo = await cameraRef.current?.takePhoto();
 
+    if (photo) {
       Alert.alert("Photo Taken", photo.path);
     }
   };
@@ -29,33 +26,16 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-
-    container: {
-        flex: 1,
-        backgroundColor: "#fff",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-
-    text: {
-        fontSize: 24,
-    },
-
-    cameraButton: {
-        position: "absolute",
-        bottom: 40,          // distance from bottom
-        alignSelf: "center", // centers horizontally
-
-        width: 70,
-        height: 70,
-        borderRadius: 40,
-
-        backgroundColor: "#ffffffff", // Snapchat yellow
-        outlineColor: "Black",
-        outlineWidth: 3,
-
-        justifyContent: "center",
-        alignItems: "center",
-    },
-
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  cameraButton: {
+    position: "absolute",
+    bottom: 24,
+    alignSelf: "center",
+    padding: 12,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    borderRadius: 40,
+  },
 });
