@@ -1,81 +1,56 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Camera, CameraPermissionStatus, getCameraDevice, useCameraDevices } from 'react-native-vision-camera';
+import React, {forwardRef, useEffect,useImperativeHandle,useRef,useState,} from "react";
+import { StyleSheet, Text, View } from "react-native";
+import {Camera,CameraPermissionStatus,useCameraDevices,} from "react-native-vision-camera";
 
-// Manages camera permissions and set-up
+export type CameraViewProps = {};
 
-export type CameraViewProps = {
-    onPhotoTaken?: (uri: string) => void;
-    onCancel?: () => void;
+export type CameraViewHandle = {
+  takePhoto: () => Promise<any>;
 };
 
-export function CameraView({ onPhotoTaken, onCancel }: CameraViewProps) {
+export const CameraView = forwardRef<CameraViewHandle, CameraViewProps>(
+  (props, ref) => {
     const camera = useRef<Camera>(null);
     const devices = useCameraDevices();
-    const device = getCameraDevice(devices, 'back');
+    const device = Array.isArray(devices)
+      ? devices.find((d) => d.position === "back")
+      : (devices as any).back;
 
-    const [hasPermission, setHasPermission] = useState<boolean>(false);
+    const [hasPermission, setHasPermission] = useState(false);
 
     useEffect(() => {
-    (async () => {
+      (async () => {
         const permission: CameraPermissionStatus =
-            await Camera.requestCameraPermission();
-
-        setHasPermission(String(permission) === 'authorized');
-        })();
+          await Camera.requestCameraPermission();
+        // Camera.requestCameraPermission() returns "granted" | "denied"
+        setHasPermission(permission === "granted");
+    })();
     }, []);
+    useImperativeHandle(ref, () => ({
+      takePhoto: async () => {
+        if (!camera.current) return;
+        return await camera.current.takePhoto({ flash: "off" });
+      },
+    }));
 
     if (!device) {
-        return <Text>Loading camera…</Text>;
+      return <Text>Loading camera…</Text>;
     }
 
     if (!hasPermission) {
-        return <Text>No camera permission</Text>;
+      return <Text>No camera permission</Text>;
     }
 
-    const takePhoto = async () => {
-        if (!camera.current) return;
-
-        const photo = await camera.current.takePhoto({
-            flash: 'off',
-        });
-
-        onPhotoTaken?.(`file://${photo.path}`);
-    };
-
     return (
-        <View style={StyleSheet.absoluteFill}>
-            <Camera
-                ref={camera}
-                style={StyleSheet.absoluteFill}
-                device={device}
-                isActive={true}
-                photo={true}
-            />
-
-            <View style={styles.controls}>
-                <TouchableOpacity onPress={onCancel}>
-                    <Text style={styles.text}>Cancel</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={takePhoto}>
-                    <Text style={styles.text}>Capture</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+      <View style={StyleSheet.absoluteFill}>
+        <Camera
+          ref={camera}
+          style={StyleSheet.absoluteFill}
+          device={device}
+          isActive={true}
+          photo={true}
+        />
+      </View>
     );
-}
-
-const styles = StyleSheet.create({
-    controls: {
-        position: 'absolute',
-        bottom: 40,
-        width: '100%',
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-    },
-    text: {
-    color: 'white',
-    fontSize: 18,
-    },
-});
+  }
+);
