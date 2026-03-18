@@ -25,11 +25,18 @@ export const CameraView = forwardRef<CameraViewHandle, CameraViewProps>(
     }, []);
 
     useImperativeHandle(ref, () => ({
-      takePhoto: async () => {
-        if (!camera.current) return;
-        return await camera.current.takePhoto({ flash: "off" });
-      },
-    }));
+    takePhoto: async () => {
+    if (!camera.current) return;
+
+    const photo = await camera.current.takePhoto({ flash: "off" });
+
+    return {
+      uri: `file://${photo.path}`,
+      type: "image/jpeg",
+      name: `photo_${Date.now()}.jpg`,
+    };
+  },
+}));
 
     if (!device) {
       return <Text>Loading camera…</Text>;
