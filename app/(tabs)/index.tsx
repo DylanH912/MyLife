@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 import { useRef, useState } from "react";
 import { Image } from "react-native";
+import * as FileSystem from "expo-file-system";
 import { CameraView, CameraViewHandle } from "../../components/MyCamera";
 
 export default function Index() {
@@ -27,13 +28,18 @@ export default function Index() {
         name: "photo.jpg",
         type: "image/jpeg",
       } as any);
+      
+      //API KEYS
+      //107f03cbca3c4968b0109fef8bc415be --szimmerm
+      const API_KEY = "107f03cbca3c4968b0109fef8bc415be"; // Replace with your actual API key
 
-      //Can be replaced with loading the picture into a folder and uploading from there
-      await fetch("https://your-api.com/upload", { // Replace with API endpoint
+      
+      await fetch("https://api.spoonacular.com/food/images/analyze", { 
         method: "POST",
         body: formData,
-        headers: {
+        headers: { 
           "Content-Type": "multipart/form-data",
+          "Authorization": `Bearer ${API_KEY}`,
         },
       });
     } catch (err) {
