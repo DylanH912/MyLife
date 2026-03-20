@@ -54,9 +54,17 @@ export default function Index() {
       } else { // - - - RECEIPT MODE  - - -
         //API KEYS
 
-        const API_KEY = "" // Replace with your actual API key
+        const API_KEY = "J9OzeFLbOirXCP9LoVWKRK6XpOFXGOS8AMVBYsa6WwJLqTN848kBC454r81Od5cT"; // Replace with your actual API key
 
-        //const resp = await fetch() // > > > API REQUEST HERE < < <
+        const resp = await fetch("https://api.tabscanner.com/api/2/process", {
+          method: "POST",
+          headers: {
+            "X-API-Key": `Bearer ${API_KEY}`,
+          },
+          body: formData,
+        })
+
+        console.log(resp);
       }
     } catch (err) {
       console.error(err);
