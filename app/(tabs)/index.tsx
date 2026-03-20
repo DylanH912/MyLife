@@ -8,7 +8,16 @@ import { CameraView, CameraViewHandle } from "../../components/MyCamera";
 export default function Index() {
   const cameraRef = useRef<CameraViewHandle>(null);
 
+  const [mode, setMode] = useState<"food" | "receipt">("food");
+
   const [photoUri, setPhotoUri] = useState<string | null>(null);
+
+  const toggleScanMode = () => {
+    if (mode === "food")
+      setMode("receipt");
+    else
+      setMode("food");
+  }
 
   const takePicture = async () => { //Picture taking and uploading logic
     try {
@@ -29,19 +38,26 @@ export default function Index() {
         type: "image/jpeg",
       } as any);
       
-      //API KEYS
-      //107f03cbca3c4968b0109fef8bc415be --szimmerm
-      const API_KEY = "107f03cbca3c4968b0109fef8bc415be"; // Replace with your actual API key
+      if (mode === "food") { // - - - FOOD MODE - - -
+        //API KEYS
+        //107f03cbca3c4968b0109fef8bc415be --szimmerm
+        const API_KEY = "107f03cbca3c4968b0109fef8bc415be"; // Replace with your actual API key
+        
+        const resp = await fetch("https://api.spoonacular.com/food/images/analyze", { 
+          method: "POST",
+          body: formData,
+          headers: { 
+            "Content-Type": "multipart/form-data",
+            "Authorization": `Bearer ${API_KEY}`,
+          },
+        });
+      } else { // - - - RECEIPT MODE  - - -
+        //API KEYS
 
-      
-      await fetch("https://api.spoonacular.com/food/images/analyze", { 
-        method: "POST",
-        body: formData,
-        headers: { 
-          "Content-Type": "multipart/form-data",
-          "Authorization": `Bearer ${API_KEY}`,
-        },
-      });
+        const API_KEY = "" // Replace with your actual API key
+
+        //const resp = await fetch() // > > > API REQUEST HERE < < <
+      }
     } catch (err) {
       console.error(err);
       Alert.alert("Upload Error", String(err));
