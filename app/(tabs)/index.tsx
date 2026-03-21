@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Image } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { CameraView, CameraViewHandle } from "../../components/MyCamera";
+import * as ImagePicker from "expo-image-picker";
 
 export default function Index() {
   const cameraRef = useRef<CameraViewHandle>(null);
@@ -19,26 +20,47 @@ export default function Index() {
       setMode("food");
   }
 
-  const takePicture = async () => { //Picture taking and uploading logic
+  const pickImage = async () => {
     try {
-      const photo = await cameraRef.current?.takePhoto();
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+      });
+      if (result.canceled) return;
 
-      if (!photo?.uri) {
-        Alert.alert("Error", "No photo captured");
+      const asset = result.assets[0];
+
+      if (!asset.uri) {
+        Alert.alert("Error", "No image selected");
         return;
       }
 
-      setPhotoUri(photo.uri);
-      Alert.alert("Photo Taken", photo.uri);
+      setPhotoUri(asset.uri);
 
-      const formData = new FormData();
+      await uploadImage(asset.uri);
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Picker error", String(err));
+    }
+  };
+
+  const uploadImage = async (uri: string) => {
+    const formData = new FormData();
+    if (mode === "food") {
       formData.append("image", {
-        uri: photo.uri,
+        uri,
         name: "photo.jpg",
         type: "image/jpeg",
       } as any);
-      
-      if (mode === "food") { // - - - FOOD MODE - - -
+    } else {
+      formData.append("file", {
+        uri,
+        name: "photo.jpg",
+        type: "image/jpeg",
+      } as any);
+    }
+
+    if (mode === "food") { // - - - FOOD MODE - - -
         //API KEYS
         //107f03cbca3c4968b0109fef8bc415be --szimmerm
         const API_KEY = "107f03cbca3c4968b0109fef8bc415be"; // Replace with your actual API key
@@ -59,18 +81,32 @@ export default function Index() {
         const resp = await fetch("https://api.tabscanner.com/api/2/process", {
           method: "POST",
           headers: {
-            "X-API-Key": `Bearer ${API_KEY}`,
+            "X-API-Key": API_KEY,
           },
           body: formData,
         })
 
         console.log(resp);
       }
-    } catch (err) {
-      console.error(err);
-      Alert.alert("Upload Error", String(err));
+  }
+
+  const takePicture = async () => {
+  try {
+    const photo = await cameraRef.current?.takePhoto();
+
+    if (!photo?.uri) {
+      Alert.alert("Error", "No photo captured");
+      return;
     }
-  };
+
+    setPhotoUri(photo.uri);
+
+    await uploadImage(photo.uri);
+  } catch (err) {
+    console.error(err);
+    Alert.alert("Upload Error", String(err));
+  }
+};
 
   return (
     <View style={styles.container}>
@@ -82,6 +118,10 @@ export default function Index() {
       <TouchableOpacity style={styles.cameraButton} onPress={takePicture}>
         <Ionicons name="camera" size={32} color="black" />
       </TouchableOpacity>
+
+      <TouchableOpacity style={[styles.cameraButton, { bottom: 100 }]} onPress={pickImage}>
+  <Ionicons name="image" size={32} color="black" />
+</TouchableOpacity>
     </View>
   );
 }

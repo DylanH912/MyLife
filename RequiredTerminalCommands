@@ -6,6 +6,7 @@
 -npm install react-native-worklets-core
 -npx expo install expo-media-library
 -npx expo prebuild
+-npx expo install expo-image-picker
 
 
 iphone 
