@@ -7,7 +7,7 @@ databaseURL = "postgresql://neondb_owner:npg_Eeiwx1QKqZT9@ep-falling-cherry-amwm
 
 engine = create_engine(databaseURL)
 with engine.connect() as conn:
-    result = conn.execute(text())
+    result = conn.execute(text("SELECT * FROM users"))
 
     # Create SessionLocal class
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

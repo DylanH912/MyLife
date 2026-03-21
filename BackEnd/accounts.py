@@ -25,16 +25,16 @@ def save_user_to_database(email, encrypted_password):
     cursor.close()
     conn.close()
 
-def login(username, password):
+def login(email, password):
     encrypted_password = encrypt(password.encode()).hexdigest()
-    if check_credentials(username, encrypted_password):
+    if check_credentials(email, encrypted_password):
         return "Login successful"
     else:
-        return "Invalid username or password" 
+        return "Invalid email or password" 
 
-def check_credentials(username, encrypted_password):
+def check_credentials(email, encrypted_password):
     for user in get_users_from_database():
-        if user['username'] == username and user['password'] == encrypted_password:
+        if user['email'] == email and user['password'] == encrypted_password:
             return True
         
     return False
