@@ -27,10 +27,13 @@ def save_user_to_database(email, encrypted_password):
 
 def login(email, password):
     encrypted_password = encrypt(password.encode()).hexdigest()
-    if check_credentials(email, encrypted_password):
-        return "Login successful"
+    if check_email_exists(email):
+        if check_credentials(email, encrypted_password):
+            return "Login successful"
+        else:
+            return "Incorrect password"
     else:
-        return "Invalid email or password" 
+        return "Email does not exist, please register first" 
 
 def check_credentials(email, encrypted_password):
     for user in get_users_from_database():

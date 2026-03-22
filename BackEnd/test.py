@@ -3,7 +3,7 @@ from accounts import login, register
 
 class TestAccounts(ut.TestCase):
     def test_register(self):
-        result = register("test", "password")
+        result = register("test2", "password")
         self.assertEqual(result, "Registration successful")
 
     def test_register_existing_email(self):
@@ -18,7 +18,11 @@ class TestAccounts(ut.TestCase):
 
     def test_login_invalid_credentials(self):
         result = login("test", "wrongpassword")
-        self.assertEqual(result, "Invalid email or password")
+        self.assertEqual(result, "Incorrect password")
+
+    def test_login_nonexistent_email(self):
+        result = login("nonexistent", "password")
+        self.assertEqual(result, "Email does not exist, please register first")
 
 #TestAccounts().test_register()
 TestAccounts().test_register_existing_email()
