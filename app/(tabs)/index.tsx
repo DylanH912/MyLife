@@ -32,11 +32,20 @@ export default function Index() {
       Alert.alert("Photo Taken", photo.uri);
 
       const formData = new FormData();
-      formData.append("image", {
-        uri: photo.uri,
-        name: "photo.jpg",
-        type: "image/jpeg",
-      } as any);
+
+      if (mode === "food") {
+        formData.append("image", {
+          uri: photo.uri,
+          name: "photo.jpg",
+          type: "image/jpeg",
+        } as any);
+      } else {
+        formData.append("file", {
+          uri: photo.uri,
+          name: "photo.jpg",
+          type: "image/jpeg",
+        } as any);
+      }
       
       if (mode === "food") { // - - - FOOD MODE - - -
         //API KEYS
@@ -59,7 +68,7 @@ export default function Index() {
         const resp = await fetch("https://api.tabscanner.com/api/2/process", {
           method: "POST",
           headers: {
-            "X-API-Key": `Bearer ${API_KEY}`,
+            "X-API-Key": API_KEY,
           },
           body: formData,
         })
