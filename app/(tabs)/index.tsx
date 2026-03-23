@@ -52,14 +52,15 @@ export default function Index() {
         //107f03cbca3c4968b0109fef8bc415be --szimmerm
         const API_KEY = "107f03cbca3c4968b0109fef8bc415be"; // Replace with your actual API key
         
-        const resp = await fetch("https://api.spoonacular.com/food/images/analyze", { 
+        const resp = await fetch(
+          `https://api.spoonacular.com/food/images/analyze?apiKey=${API_KEY}`,
+        {
           method: "POST",
           body: formData,
-          headers: { 
-            "Content-Type": "multipart/form-data",
-            "Authorization": `Bearer ${API_KEY}`,
-          },
         });
+        const data = await resp.json();
+        console.log("API response:", data);
+        Alert.alert("Response", JSON.stringify(data));
       } else { // - - - RECEIPT MODE  - - -
         //API KEYS
 
