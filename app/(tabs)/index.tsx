@@ -32,7 +32,7 @@ export default function Index() {
       Alert.alert("Photo Taken", photo.uri);
 
       const formData = new FormData();
-
+      // Leave in frontend
       if (mode === "food") {
         formData.append("image", {
           uri: photo.uri,
@@ -47,6 +47,7 @@ export default function Index() {
         } as any);
       }
       
+      // Move to BACKEND: send to Spoonacular
       if (mode === "food") { // - - - FOOD MODE - - -
         //API KEYS
         //107f03cbca3c4968b0109fef8bc415be --szimmerm
@@ -61,6 +62,7 @@ export default function Index() {
         const data = await resp.json();
         console.log("API response:", data);
         Alert.alert("Response", JSON.stringify(data));
+      // Move to BACKEND: send to Tabscanner: text to Spoonacular
       } else { // - - - RECEIPT MODE  - - -
         //API KEYS
 
