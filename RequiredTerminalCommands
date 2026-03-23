@@ -3,6 +3,14 @@
 -npm install react-native-vision-camera
 -npm audit fix
 -npm run ios or android
+-npm install react-native-worklets-core
+-npx expo install expo-media-library
+-npx expo prebuild
+
+
+iphone 
+-cd ios
+-pod install
 
 pip install psycopg2
 pip install hashlib
