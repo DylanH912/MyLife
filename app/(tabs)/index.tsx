@@ -48,7 +48,7 @@ export default function Index() {
       }
       
       if (mode === "food") { // - - - FOOD MODE - - -
-        //Call to backend
+        const response = await fetch("https://localhost:8000/api/food/", {})
       } else { // - - - RECEIPT MODE  - - -
         // Call to backend
       }
