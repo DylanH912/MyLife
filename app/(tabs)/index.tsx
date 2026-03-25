@@ -48,33 +48,9 @@ export default function Index() {
       }
       
       if (mode === "food") { // - - - FOOD MODE - - -
-        //API KEYS
-        //107f03cbca3c4968b0109fef8bc415be --szimmerm
-        const API_KEY = "107f03cbca3c4968b0109fef8bc415be"; // Replace with your actual API key
-        
-        const resp = await fetch(
-          `https://api.spoonacular.com/food/images/analyze?apiKey=${API_KEY}`,
-        {
-          method: "POST",
-          body: formData,
-        });
-        const data = await resp.json();
-        console.log("API response:", data);
-        Alert.alert("Response", JSON.stringify(data));
+        //Call to backend
       } else { // - - - RECEIPT MODE  - - -
-        //API KEYS
-
-        const API_KEY = "J9OzeFLbOirXCP9LoVWKRK6XpOFXGOS8AMVBYsa6WwJLqTN848kBC454r81Od5cT"; // Replace with your actual API key
-
-        const resp = await fetch("https://api.tabscanner.com/api/2/process", {
-          method: "POST",
-          headers: {
-            "X-API-Key": API_KEY,
-          },
-          body: formData,
-        })
-
-        console.log(resp);
+        // Call to backend
       }
     } catch (err) {
       console.error(err);
