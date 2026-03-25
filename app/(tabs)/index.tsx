@@ -48,7 +48,7 @@ export default function Index() {
       }
       
       if (mode === "food") { // - - - FOOD MODE - - -
-        const response = await fetch("https://localhost:8000/api/food/", {})
+        const response = await fetch(`https://localhost:8000/api/food?file_path=${photo.uri}`)
       } else { // - - - RECEIPT MODE  - - -
         // Call to backend
       }
