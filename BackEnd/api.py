@@ -1,3 +1,27 @@
+<<<<<<< HEAD
+from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from accounts import register, login
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # allow React frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.post("/register")
+def register_user(email: str, password: str):
+    return register(email, password)
+
+@app.post("/login")
+def login_user(email: str, password: str):
+    return login(email, password)
+
+=======
 import requests
 
 # API keys: move to .env eventually
@@ -27,3 +51,4 @@ def analyze_receipt_image(file_path: str):
         response = requests.post(url, headers=headers, files=files)
     response.raise_for_status()
     return response.json()
+>>>>>>> bd7a4cf882645893ad586d577f65fe1ad0d10fe6
