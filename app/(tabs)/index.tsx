@@ -48,11 +48,17 @@ export default function Index() {
       }
       
       if (mode === "food") { // - - - FOOD MODE - - -
-        //Call to backend
-        Alert.alert("Food Mode", "Photo ready for food recognition upload");
+        const response = await fetch(`https://localhost:8000/api/food?file_path=${photo.uri}`)
+        if (response.ok) {
+          const data = await response.json();
+          Alert.alert("Food Analysis Result", JSON.stringify(data));
+        }
       } else { // - - - RECEIPT MODE  - - -
-        // Call to backend
-        Alert.alert("Receipt Mode", "Photo ready for receipt? upload");
+        const response = await fetch(`https://localhost:8000/api/receipts?file_path=${photo.uri}`)
+        if (response.ok) {
+          const data = await response.json();
+          Alert.alert("Receipt Analysis Result", JSON.stringify(data));
+        }
       }
     } catch (err) {
       console.error(err);
