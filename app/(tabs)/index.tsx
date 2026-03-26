@@ -5,21 +5,13 @@ import { Image } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { CameraView, CameraViewHandle } from "../../components/MyCamera";
 
-export default function Index() {
-  const cameraRef = useRef<CameraViewHandle>(null);
-
-  const [mode, setMode] = useState<"food" | "receipt">("food");
-
+export default function Tabs() {
+  const cameraRef = useRef<CameraViewHandle | null>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [mode, setMode] = useState<"food" | "receipt">("food");
+  const EXPO_PUBLIC_API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
 
-  const toggleScanMode = () => {
-    if (mode === "food")
-      setMode("receipt");
-    else
-      setMode("food");
-  }
-
-  const takePicture = async () => { //Picture taking and uploading logic
+  const takePicture = async () => {
     try {
       const photo = await cameraRef.current?.takePhoto();
 
@@ -29,40 +21,42 @@ export default function Index() {
       }
 
       setPhotoUri(photo.uri);
-      Alert.alert("Photo Taken", photo.uri);
 
+      // CHANGE 1: Create FormData to hold the actual image file
       const formData = new FormData();
-
-      if (mode === "food") {
-        formData.append("image", {
-          uri: photo.uri,
-          name: "photo.jpg",
-          type: "image/jpeg",
-        } as any);
-      } else {
-        formData.append("file", {
-          uri: photo.uri,
-          name: "photo.jpg",
-          type: "image/jpeg",
-        } as any);
-      }
       
-      if (mode === "food") { // - - - FOOD MODE - - -
-        const response = await fetch(`https://localhost:8000/food?file_path=${photo.uri}`)
-        if (response.ok) {
-          const data = await response.json();
-          Alert.alert("Food Analysis Result", JSON.stringify(data));
-        }
-      } else { // - - - RECEIPT MODE  - - -
-        const response = await fetch(`https://localhost:8000/receipts?file_path=${photo.uri}`)
-        if (response.ok) {
-          const data = await response.json();
-          Alert.alert("Receipt Analysis Result", JSON.stringify(data));
-        }
+      // The key ("file") must match the variable name in your FastAPI function
+      formData.append("file", {
+        uri: photo.uri,
+        name: "photo.jpg",
+        type: "image/jpeg",
+      } as any);
+
+      // CHANGE 2: Use POST method and send the formData as the body
+      // Also fixed the endpoints to match your API (/food and /receipt)
+      const endpoint = mode === "food" ? "/food" : "/receipt";
+      
+      const response = await fetch(`${EXPO_PUBLIC_API_URL}${endpoint}`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Accept": "application/json",
+          // Note: DO NOT set 'Content-Type': 'multipart/form-data' manually. 
+          // fetch will do it automatically with the correct "boundary".
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        Alert.alert(`${mode === "food" ? "Food" : "Receipt"} Result`, JSON.stringify(data));
+      } else {
+        const errorText = await response.text();
+        Alert.alert("Server Error", errorText);
       }
+
     } catch (err) {
       console.error(err);
-      Alert.alert("Upload Error", String(err));
+      Alert.alert("Network Error", "Check if your API is running and the IP address is correct.");
     }
   };
 

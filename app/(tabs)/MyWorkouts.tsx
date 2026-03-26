@@ -30,6 +30,19 @@ export default function WorkoutListScreen() {
     goals: string[];
     met: number;
     video_demo_url: string;
+    score?: number;
+  };
+
+  const MAX_SCORE = 15;
+
+  const getColorForScore = (score: number, maxScore: number) => {
+    const ratio = score / maxScore;
+
+    // Red → Yellow → Green gradient
+    const r = ratio < 0.5 ? 255 : Math.floor(255 - (ratio - 0.5) * 2 * 255);
+    const g = ratio < 0.5 ? Math.floor(ratio * 2 * 255) : 255;
+
+    return `rgb(${r}, ${g}, 0)`;
   };
 
   const sortedWorkouts = useMemo<Workout[]>(() => {
@@ -39,25 +52,52 @@ export default function WorkoutListScreen() {
       .map((w: Workout) => {
         let score = 0;
 
-        // Match goals
-        if (w.goals.some((g) => userTags.includes(g))) score += 2;
+        // 1. Goals match (strong signal)
+        if (w.goals.some((g) => userTags.includes(g))) score += 3;
 
-        // Match muscles
-        if (w.muscles.some((m) => userTags.includes(m))) score += 1;
+        // 2. Muscles match
+        if (w.muscles.some((m) => userTags.includes(m))) score += 2;
 
-        // Match category
+        // 3. Category match
         if (userTags.includes(w.category)) score += 1;
 
+        // 4. Movement pattern match
+        if (userTags.includes(w.movement_pattern)) score += 1;
+
+        // 5. Programs match
+        if (w.programs.some((p) => userTags.includes(p))) score += 1;
+
+        // 6. Force type match
+        if (userTags.includes(w.force_type)) score += 1;
+
+        // 7. Mechanics match
+        if (userTags.includes(w.mechanics)) score += 1;
+
+        // 8. Equipment match
+        if (w.equipment !== "bodyweight" && userTags.includes(w.equipment)) {
+          score += 1;
+        }
+
+        // 9. Difficulty preference
         if (w.difficulty === "beginner") score += 1;
 
-        return { workout: w, score };
+        // 10. MET value match
+        if (userTags.includes("weight loss") || userTags.includes("endurance")) {
+          if (w.met >= 8) score += 2;
+        }
+
+        return { ...w, score };
       })
-      .sort((a, b) => b.score - a.score)
-      .map((ws) => ws.workout);
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
   }, [userTags]);
 
   const renderItem: ListRenderItem<Workout> = ({ item }) => (
-    <TouchableOpacity style={styles.card}>
+    <TouchableOpacity
+      style={[
+        styles.card,
+        { backgroundColor: getColorForScore(item.score ?? 0, MAX_SCORE) },
+      ]}
+    >
       <Text style={styles.title}>{item.name}</Text>
 
       <Text>Category: {item.category}</Text>
@@ -69,6 +109,10 @@ export default function WorkoutListScreen() {
       <Text>Mechanics: {item.mechanics}</Text>
       <Text>Force Type: {item.force_type}</Text>
       <Text>MET: {item.met}</Text>
+
+      <Text style={{ marginTop: 6, fontWeight: "bold" }}>
+        Compatibility Score: {item.score}
+      </Text>
     </TouchableOpacity>
   );
 
@@ -98,7 +142,6 @@ const styles = StyleSheet.create({
   card: {
     padding: 16,
     marginBottom: 10,
-    backgroundColor: "#eee",
     borderRadius: 10,
   },
   title: {
