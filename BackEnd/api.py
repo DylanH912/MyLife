@@ -5,8 +5,7 @@ from fastapi import FastAPI, Depends, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel # FIXED: Added for JSON body support
 from accounts import register, login
-import httpx
-import io
+import time
 import os
 from dotenv import load_dotenv, dotenv_values 
 load_dotenv()
@@ -60,13 +59,22 @@ async def analyze_food_image(file: UploadFile = File(...)): # FIXED: Now accepts
 
 @app.post("/receipt")
 async def analyze_receipt_image(file: UploadFile = File(...), mode: str = Form(...), extraflag = False): # FIXED: Now accepts a real file upload
-    url = "https://api.tabscanner.com/api/2/process"  # FIXED: Tabscanner API endpoint
+    url = "https://api.tabscanner.com/api/2/process/"  # FIXED: Tabscanner API endpoint
+    result_url = "https://api.tabscanner.com/api/result/{0}"
     print(os.getenv("TABSCANNER_API_KEY"))
-    headers = {"X-API-Key": os.getenv("TABSCANNER_API_KEY")}
-    
+    headers = {"apikey": os.getenv("TABSCANNER_API_KEY")}
+    payload = {"documentType":"receipt"}    
     content = await file.read()
     files = {"file": (file.filename, content, file.content_type)}
     
-    response = httpx.post(url, headers=headers, files=files)
-    response.raise_for_status()
-    return response.json()
+    response = requests.post( url,
+                              files=files,
+                              data=payload,
+                              headers=headers)
+    token = response.json().get("token")
+    endpoint = result_url.format(token)
+    time.sleep(5)  # FIXED: Wait for processing
+    result = requests.get(endpoint, headers=headers)
+    result.raise_for_status()
+    print(result.text) # DEBUG: Print the raw response from Tabscanner
+    return result.text
