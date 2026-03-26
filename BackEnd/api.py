@@ -4,6 +4,9 @@ from pydantic import BaseModel # FIXED: Added for JSON body support
 from accounts import register, login
 import requests
 import io
+import os
+from dotenv import load_dotenv, dotenv_values 
+load_dotenv()
 
 app = FastAPI()
 
@@ -30,12 +33,10 @@ def register_user(user: UserAuth): # FIXED: Uses the UserAuth model
 def login_user(user: UserAuth): # FIXED: Uses the UserAuth model
     return login(user.email, user.password)
 
-SPOONACULAR_API_KEY = "107f03cbca3c4968b0109fef8bc415be"
-TABSCANNER_API_KEY = "J9OzeFLbOirXCP9LoVWKRK6XpOFXGOS8AMVBYsa6WwJLqTN848kBC454r81Od5cT"
 
 @app.post("/food")
 async def analyze_food_image(file: UploadFile = File(...)): # FIXED: Now accepts a real file upload
-    url = f"https://api.spoonacular.com{SPOONACULAR_API_KEY}"
+    url = f"https://api.spoonacular.com{os.getenv("SPOON_API_KEY")}"
     
     # Read the file sent from the phone
     content = await file.read()
@@ -48,7 +49,7 @@ async def analyze_food_image(file: UploadFile = File(...)): # FIXED: Now accepts
 @app.post("/receipt")
 async def analyze_receipt_image(file: UploadFile = File(...)): # FIXED: Now accepts a real file upload
     url = "https://api.tabscanner.com"
-    headers = {"X-API-Key": TABSCANNER_API_KEY}
+    headers = {"X-API-Key": os.getenv("TABSCANNER_API_KEY")}
     
     content = await file.read()
     files = {"file": (file.filename, content, file.content_type)}
