@@ -49,8 +49,10 @@ export default function Index() {
       
       if (mode === "food") { // - - - FOOD MODE - - -
         //Call to backend
+        Alert.alert("Food Mode", "Photo ready for food recognition upload");
       } else { // - - - RECEIPT MODE  - - -
         // Call to backend
+        Alert.alert("Receipt Mode", "Photo ready for receipt? upload");
       }
     } catch (err) {
       console.error(err);

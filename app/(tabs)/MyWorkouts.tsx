@@ -8,71 +8,81 @@ import {
   ListRenderItem,
 } from "react-native";
 
-import { SafeAreaView } from "react-native-safe-area-context"; // TODO: Install this on other screens
+import { SafeAreaView } from "react-native-safe-area-context";
 
-
-
-import { workouts } from "../../assets/workouts.js";
+import workouts from "../../assets/workouts.json";
 
 export default function WorkoutListScreen() {
-  //TODO: REPLACE THIS WITH REAL USER DATA
-  const USER_GOAL = "strength";
+  // User preference tags
+  const userTags = ["strength", "endurance", "weight loss", "calves"];
 
   type Workout = {
     id: string;
     name: string;
-    category: string;
-    muscle: string;
+    muscles: string[];
+    equipment: string;
+    movement_pattern: string;
     difficulty: string;
+    category: string;
+    mechanics: string;
+    force_type: string;
+    programs: string[];
     goals: string[];
-    image: string | null;
+    met: number;
+    video_demo_url: string;
   };
 
-  // Sort workouts based on goal relevance
   const sortedWorkouts = useMemo<Workout[]>(() => {
-    if (!workouts) {
-        console.error("Workouts data is undefined");
-        return [];
-    }
+    if (!workouts) return [];
 
-  return [...workouts].sort((a: Workout, b: Workout) => {
-      const score  = (workout: Workout) => {
-        let s = 0;
+    return [...workouts]
+      .map((w: Workout) => {
+        let score = 0;
 
-        if (workout.goals.includes(USER_GOAL)) s+= 1;
-        if (workout.difficulty === "beginner") s+= 1; // Add future logic to adjust based on user's experience level
+        // Match goals
+        if (w.goals.some((g) => userTags.includes(g))) score += 2;
 
-        return s;
-      }
+        // Match muscles
+        if (w.muscles.some((m) => userTags.includes(m))) score += 1;
 
-        return score(b) - score(a);
-    });
-  }, [USER_GOAL]);
+        // Match category
+        if (userTags.includes(w.category)) score += 1;
+
+        if (w.difficulty === "beginner") score += 1;
+
+        return { workout: w, score };
+      })
+      .sort((a, b) => b.score - a.score)
+      .map((ws) => ws.workout);
+  }, [userTags]);
 
   const renderItem: ListRenderItem<Workout> = ({ item }) => (
     <TouchableOpacity style={styles.card}>
       <Text style={styles.title}>{item.name}</Text>
-      <Text>{item.category}</Text>
-      <Text>{item.muscle}</Text>
 
-      {/* Image here */}
-      {/*
-      <Image source={{ uri: item.image }} style={styles.image} /> */}
+      <Text>Category: {item.category}</Text>
+      <Text>Difficulty: {item.difficulty}</Text>
+      <Text>Muscles: {item.muscles.join(", ")}</Text>
+      <Text>Programs: {item.programs.join(", ")}</Text>
+      <Text>Equipment: {item.equipment}</Text>
+      <Text>Movement: {item.movement_pattern}</Text>
+      <Text>Mechanics: {item.mechanics}</Text>
+      <Text>Force Type: {item.force_type}</Text>
+      <Text>MET: {item.met}</Text>
     </TouchableOpacity>
   );
 
   return (
-  <SafeAreaView style={styles.container} edges={['top']}>
-    <Text style={styles.header}>Workouts</Text>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <Text style={styles.header}>Workouts</Text>
 
-    <FlatList
-      data={sortedWorkouts}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
-    />
-  </SafeAreaView>
-);
-
+      <FlatList
+        data={sortedWorkouts}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+      />
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
