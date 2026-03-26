@@ -1,11 +1,12 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import WorkoutStartModal from "./WorkoutStartModal";
 import {
   View,
   Text,
   FlatList,
   StyleSheet,
   TouchableOpacity,
-  ListRenderItem,
+  ListRenderItem
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,6 +14,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import workouts from "../../assets/workouts.json";
 
 export default function WorkoutListScreen() {
+  const [showModal, setShowModal] = useState(true); //Prompt user to start workout
+
   // User preference tags
   const userTags = ["strength", "endurance", "weight loss", "calves", "bodyweight", "beginner", "glutes"];
 
@@ -113,6 +116,12 @@ export default function WorkoutListScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
+
+      <WorkoutStartModal
+      visible={showModal}
+      onClose={() => setShowModal(false)}
+    />
+
       <Text style={styles.header}>Workouts</Text>
 
       <FlatList
