@@ -10,9 +10,13 @@
     "ios": {
       "icon": "./assets/images/icon.png",
       "bundleIdentifier": "com.anonymous.MyLife",
+      "NSCameraUsageDescription": "This app needs camera access to take photos.",
       "infoPlist": {
-        "NSCameraUsageDescription": "This app needs camera access to take photos."
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
       }
+      
     },
     "android": {
         "adaptiveIcon": {

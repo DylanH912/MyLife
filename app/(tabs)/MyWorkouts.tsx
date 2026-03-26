@@ -14,7 +14,7 @@ import workouts from "../../assets/workouts.json";
 
 export default function WorkoutListScreen() {
   // User preference tags
-  const userTags = ["strength", "endurance", "weight loss", "calves"];
+  const userTags = ["strength", "endurance", "weight loss", "calves", "bodyweight", "beginner", "glutes"];
 
   type Workout = {
     id: string;
@@ -33,7 +33,7 @@ export default function WorkoutListScreen() {
     score?: number;
   };
 
-  const MAX_SCORE = 15;
+  const MAX_SCORE = 16;
 
   const getColorForScore = (score: number, maxScore: number) => {
     const ratio = score / maxScore;
@@ -56,10 +56,10 @@ export default function WorkoutListScreen() {
         if (w.goals.some((g) => userTags.includes(g))) score += 3;
 
         // 2. Muscles match
-        if (w.muscles.some((m) => userTags.includes(m))) score += 2;
+        if (w.muscles.some((m) => userTags.includes(m))) score += 4;
 
         // 3. Category match
-        if (userTags.includes(w.category)) score += 1;
+        if (userTags.includes(w.category)) score += 2;
 
         // 4. Movement pattern match
         if (userTags.includes(w.movement_pattern)) score += 1;
@@ -68,7 +68,7 @@ export default function WorkoutListScreen() {
         if (w.programs.some((p) => userTags.includes(p))) score += 1;
 
         // 6. Force type match
-        if (userTags.includes(w.force_type)) score += 1;
+        if (userTags.includes(w.force_type)) score += 2;
 
         // 7. Mechanics match
         if (userTags.includes(w.mechanics)) score += 1;
@@ -78,13 +78,8 @@ export default function WorkoutListScreen() {
           score += 1;
         }
 
-        // 9. Difficulty preference
-        if (w.difficulty === "beginner") score += 1;
-
-        // 10. MET value match
-        if (userTags.includes("weight loss") || userTags.includes("endurance")) {
-          if (w.met >= 8) score += 2;
-        }
+        // 9. Difficulty match
+        if (userTags.includes(w.difficulty)) score += 1;
 
         return { ...w, score };
       })

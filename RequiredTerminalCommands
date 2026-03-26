@@ -19,5 +19,15 @@ pip install fastAPI
 
 
 Sutton fastAPI
+python3 -m venv venv
 source venv/bin/activate   
+python3 -m pip install "fastapi[standard]"
+cd BackEnd
+python3 -m pip install sqlalchemy
+pip install psycopg2-binary
+pip install requests 
 python -m fastapi run api.py
+
+
+
+python -m fastapi run api.py --host 0.0.0.0 --port 8000
