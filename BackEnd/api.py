@@ -24,7 +24,7 @@ def login_user(email: str, password: str):
 
 # API keys: move to .env eventually
 SPOONACULAR_API_KEY = "107f03cbca3c4968b0109fef8bc415be"
-TABSCANNER_API_LEY = "J9OzeFLbOirXCP9LoVWKRK6XpOFXGOS8AMVBYsa6WwJLqTN848kBC454r81Od5cT"
+TABSCANNER_API_KEY = "J9OzeFLbOirXCP9LoVWKRK6XpOFXGOS8AMVBYsa6WwJLqTN848kBC454r81Od5cT"
 @app.post("/food")
 def analyze_food_image(file_path: str):
     url = f"https://api.spoonacular.com/food/images/analyze?apiKey={SPOONACULAR_API_KEY}"
