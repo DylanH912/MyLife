@@ -15,5 +15,13 @@ def test_analyze_receipt_image():
         )
     assert response.status_code == 200
 
+def test_analyze_food_image():
+    with open("C:/MyLife/BackEnd/food.png", "rb") as f:
+        response = client.post(
+            "/food",
+            files={"file": ("R.jpg", f, "image/jpeg")}
+        )
+    #assert response.status_code == 200
+    print(response.json())
 
-test_analyze_receipt_image()
+test_analyze_food_image()

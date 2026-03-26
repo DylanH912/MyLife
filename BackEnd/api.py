@@ -20,12 +20,7 @@ app.add_middleware(
 )
 
 
-@app.post("/food")
-async def analyze_food_image(file: UploadFile = File(...)):
-    # FIXED: Added proper path and apiKey parameter
-    url = f"https://api.spoonacular.com{"SPOON_API_KEY"}"
-# FIXED: Added Pydantic model so FastAPI knows to look in the JSON Body
-# Without this, FastAPI expects these as URL parameters (?email=...)
+
 class UserAuth(BaseModel):
     email: str
     password: str
@@ -41,14 +36,14 @@ def login_user(user: UserAuth): # FIXED: Uses the UserAuth model
 
 @app.post("/food")
 async def analyze_food_image(file: UploadFile = File(...)): # FIXED: Now accepts a real file upload
-    url = f"https://api.spoonacular.com{os.getenv("SPOON_API_KEY")}"
-    
+    endpoint = f"https://api.spoonacular.com/food/images/classify?apiKey={os.getenv('SPOON_API_KEY')}"    
     content = await file.read()
     # Spoonacular expects the parameter name to be 'file'
     files = {"file": (file.filename, content, file.content_type)}
     
     try:
-        response = requests.post(url, files=files)
+        response = requests.post(endpoint, files=files)
+        print(response.text) # DEBUG: Print the raw response from Spoonacular
         response.raise_for_status()
         return response.json()
     except Exception as e:
