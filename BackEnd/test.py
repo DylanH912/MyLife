@@ -1,9 +1,10 @@
 import unittest as ut
+from nutritioninfo import save_pantry_item
 from accounts import login, register
 
 class TestAccounts(ut.TestCase):
     def test_register(self):
-        result = register("test2", "password")
+        result = register("test3", "password")
         self.assertEqual(result, "Registration successful")
 
     def test_register_existing_email(self):
@@ -24,7 +25,12 @@ class TestAccounts(ut.TestCase):
         result = login("nonexistent", "password")
         self.assertEqual(result, "Email does not exist, please register first")
 
-#TestAccounts().test_register()
+    def test_save_pantry_item(self):
+        save_pantry_item("Test Food", 2)
+
+# TestAccounts().test_register()
 TestAccounts().test_register_existing_email()
 TestAccounts().test_login_success()
 TestAccounts().test_login_invalid_credentials()
+
+TestAccounts().test_save_pantry_item()
