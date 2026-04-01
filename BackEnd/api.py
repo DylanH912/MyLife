@@ -8,6 +8,8 @@ from accounts import register, login
 import time
 import os
 from dotenv import load_dotenv, dotenv_values 
+import psycopg2
+import database as db
 load_dotenv()
 
 app = FastAPI()
@@ -63,9 +65,9 @@ async def analyze_receipt_image(file: UploadFile = File(...), mode: str = Form(.
     files = {"file": (file.filename, content, file.content_type)}
     
     response = requests.post( url,
-                              files=files,
-                              data=payload,
-                              headers=headers)
+    files=files,
+    data=payload,
+    headers=headers)
     token = response.json().get("token")
     endpoint = result_url.format(token)
     time.sleep(5)  # FIXED: Wait for processing
@@ -73,3 +75,16 @@ async def analyze_receipt_image(file: UploadFile = File(...), mode: str = Form(.
     result.raise_for_status()
     print(result.text) # DEBUG: Print the raw response from Tabscanner
     return result.text
+
+@app.get("/pantry")
+def get_pantry_items():
+    conn = psycopg2.connect(db.databaseURL)
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT food_name, quantity FROM pantry")
+    items = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return [{"food_name": item[0], "quantity": item[1]} for item in items]
