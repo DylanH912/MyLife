@@ -2,16 +2,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 import { useRef, useState } from "react";
 import { Image } from "react-native";
-import * as FileSystem from "expo-file-system";
 import { CameraView, CameraViewHandle } from "../../components/MyCamera";
 
-export default function Tabs() {
-  const cameraRef = useRef<CameraViewHandle | null>(null);
+export default function Index() {
+  const cameraRef = useRef<CameraViewHandle>(null);
+
   const [photoUri, setPhotoUri] = useState<string | null>(null);
-  const [mode, setMode] = useState<"food" | "receipt">("food");
-  //const EXPO_PUBLIC_API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
-  const EXPO_PUBLIC_API_URL = "http://192.168.68.54:8000"; // CHANGE: Use your machine's local IP address and port where FastAPI is running
-  const takePicture = async () => {
+
+  const takePicture = async () => { //Picture taking and uploading logic
     try {
       const photo = await cameraRef.current?.takePhoto();
 
@@ -21,42 +19,26 @@ export default function Tabs() {
       }
 
       setPhotoUri(photo.uri);
+      Alert.alert("Photo Taken", photo.uri);
 
-      // CHANGE 1: Create FormData to hold the actual image file
       const formData = new FormData();
-      
-      // The key ("file") must match the variable name in your FastAPI function
-      formData.append("file", {
+      formData.append("image", {
         uri: photo.uri,
         name: "photo.jpg",
         type: "image/jpeg",
       } as any);
 
-      // CHANGE 2: Use POST method and send the formData as the body
-      // Also fixed the endpoints to match your API (/food and /receipt)
-      const endpoint = mode === "food" ? "/food" : "/receipt";
-      
-      const response = await fetch(`${EXPO_PUBLIC_API_URL}${endpoint}`, {
+      //Can be replaced with loading the picture into a folder and uploading from there
+      await fetch("https://your-api.com/upload", { // Replace with API endpoint
         method: "POST",
         body: formData,
         headers: {
-          "Accept": "application/json",
-          // Note: DO NOT set 'Content-Type': 'multipart/form-data' manually. 
-          // fetch will do it automatically with the correct "boundary".
+          "Content-Type": "multipart/form-data",
         },
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        Alert.alert(`${mode === "food" ? "Food" : "Receipt"} Result`, JSON.stringify(data));
-      } else {
-        const errorText = await response.text();
-        Alert.alert("Server Error", errorText);
-      }
-
     } catch (err) {
       console.error(err);
-      Alert.alert("Network Error", "Check if your API is running and the IP address is correct.");
+      Alert.alert("Upload Error", String(err));
     }
   };
 
