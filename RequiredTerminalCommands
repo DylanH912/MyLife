@@ -31,3 +31,5 @@ python -m fastapi run api.py
 
 
 python -m fastapi run api.py --host 0.0.0.0 --port 8000
+
+npm install @mui/material @emotion/react @emotion/styled
