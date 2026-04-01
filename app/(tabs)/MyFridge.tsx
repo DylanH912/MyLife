@@ -10,7 +10,7 @@ const MyFridge = () => {
     const [items, setItems] = useState<PantryItem[]>([]);
 
     useEffect(() => {
-    fetch("http://YOUR_IP:8000/pantry") // ⚠️ important, see below
+    fetch("http://192.168.68.54:8000")
         .then((res) => res.json())
         .then((data) => setItems(data))
         .catch((err) => console.error(err));
