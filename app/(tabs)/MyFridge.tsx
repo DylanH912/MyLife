@@ -18,7 +18,6 @@ const MyFridge = () => {
 
     return (
         <div>
-            <h1>My Fridge</h1>
             <ul>
                 {items.map((item, index) => (
                     <li key={index}>
