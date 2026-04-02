@@ -10,7 +10,6 @@ import os
 from dotenv import load_dotenv, dotenv_values 
 import psycopg2
 import json
-import 
 import database as db
 load_dotenv()
 
@@ -52,8 +51,9 @@ async def analyze_food_image(file: UploadFile = File(...)): # FIXED: Now accepts
         parsed_response = response.json()
         category = parsed_response.get("category", "Unknown")
         probability = parsed_response.get("probability", 0)
-        print(f"Category: {category}, Probability: {probability}") # DEBUG: Print the extracted category and probability
-        
+        if category == "Unknown" or probability < 0.5:
+            print("Low confidence in category prediction, returning 'Unknown'") # DEBUG: Log low confidence cases
+        return {"category": category, "probability": probability}
     except Exception as e:
         # This will show you the real error from Spoonacular if it fails
         detail = response.text if 'response' in locals() else str(e)
