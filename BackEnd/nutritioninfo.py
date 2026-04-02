@@ -1,6 +1,7 @@
 from api import analyze_food_image, analyze_receipt_image
 import database as db
 import psycopg2
+import json
 
 
 def get_food_info(file_path: str):

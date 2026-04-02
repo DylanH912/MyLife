@@ -9,6 +9,8 @@ import time
 import os
 from dotenv import load_dotenv, dotenv_values 
 import psycopg2
+import json
+import 
 import database as db
 load_dotenv()
 
@@ -47,7 +49,11 @@ async def analyze_food_image(file: UploadFile = File(...)): # FIXED: Now accepts
         response = requests.post(endpoint, files=files)
         print(response.text) # DEBUG: Print the raw response from Spoonacular
         response.raise_for_status()
-        return response.json()
+        parsed_response = response.json()
+        category = parsed_response.get("category", "Unknown")
+        probability = parsed_response.get("probability", 0)
+        print(f"Category: {category}, Probability: {probability}") # DEBUG: Print the extracted category and probability
+        
     except Exception as e:
         # This will show you the real error from Spoonacular if it fails
         detail = response.text if 'response' in locals() else str(e)

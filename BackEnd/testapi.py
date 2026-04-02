@@ -1,6 +1,7 @@
 from fastapi import testclient
 from api import app
 import PIL.Image as Image
+import json
 
 img = Image.open("C:/MyLife/BackEnd/R.jpg")
 img.resize((720, 1280)).save("C:/MyLife/BackEnd/R.jpg") # Resize to 224x224 for testing
