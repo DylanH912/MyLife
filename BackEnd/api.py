@@ -80,6 +80,8 @@ async def analyze_receipt_image(file: UploadFile = File(...), mode: str = Form(.
     result = requests.get(endpoint, headers=headers)
     result.raise_for_status()
     print(result.text) # DEBUG: Print the raw response from Tabscanner
+    parsed = result.json()
+    
     return result.text
 
 @app.get("/pantry")

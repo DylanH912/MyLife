@@ -9,8 +9,8 @@ export default function Tabs() {
   const cameraRef = useRef<CameraViewHandle | null>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [mode, setMode] = useState<"food" | "receipt">("food");
-  //const EXPO_PUBLIC_API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
-  const EXPO_PUBLIC_API_URL = "http://192.168.68.54:8000"; // CHANGE: Use your machine's local IP address and port where FastAPI is running
+  const EXPO_PUBLIC_API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
+  //const EXPO_PUBLIC_API_URL = "http://192.168.68.54:8000"; // CHANGE: Use your machine's local IP address and port where FastAPI is running
   const takePicture = async () => {
     try {
       const photo = await cameraRef.current?.takePhoto();
