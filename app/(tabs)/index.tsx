@@ -11,6 +11,11 @@ export default function Tabs() {
   const [mode, setMode] = useState<"food" | "receipt">("food");
   const EXPO_PUBLIC_API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
   //const EXPO_PUBLIC_API_URL = "http://192.168.68.54:8000"; // CHANGE: Use your machine's local IP address and port where FastAPI is running
+
+  const toggleMode = () => {
+    setMode((prev) => (prev === "food" ? "receipt" : "food"));
+  }
+
   const takePicture = async () => {
     try {
       const photo = await cameraRef.current?.takePhoto();
@@ -67,6 +72,15 @@ export default function Tabs() {
       {photoUri && (
         <Image source={{ uri: photoUri }} style={{ width: 100, height: 100 }} />
       )}
+
+      <TouchableOpacity style={styles.toggleButton} onPress={toggleMode}>
+        <Ionicons
+          name={mode === "food" ? "fast-food" : "receipt"}
+          size={24}
+          color="black"
+        />
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.cameraButton} onPress={takePicture}>
         <Ionicons name="camera" size={32} color="black" />
       </TouchableOpacity>
@@ -87,4 +101,13 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.9)",
     borderRadius: 40,
   },
+  toggleButton: {
+    position: "absolute",
+    top: 60,
+    right: 20,
+    padding: 10,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    borderRadius: 30,
+  },
+
 });
