@@ -53,7 +53,8 @@ async def analyze_food_image(file: UploadFile = File(...)): # FIXED: Now accepts
         category = parsed_response.get("category", "Unknown")
         probability = parsed_response.get("probability", 0)
         if category == "Unknown" or probability < 0.5:
-            print("Low confidence in category prediction, returning 'Unknown'") # DEBUG: Log low confidence cases
+            print("Low confidence in category prediction, returning 'Unknown'")
+            return False # DEBUG: Log low confidence cases
         else:
             return (get_nutritional_info(category))
     except Exception as e:
@@ -77,7 +78,7 @@ def get_nutritional_info(food_name):
         return post_nutritional_info(food_name, calories, protein, fat, carbs)
     else:
         print(f"No nutritional info found for {food_name}") # DEBUG: Log when no info is found
-        return "error" # Default values if no match found
+        return False # Default values if no match found
     
 def post_nutritional_info(food_name, calories, protein, fat, carbs):
     print("In post_nutritional_info")
@@ -91,7 +92,7 @@ def post_nutritional_info(food_name, calories, protein, fat, carbs):
     cursor.close()
     conn.close()
     print("Updated pantry with nutritional info") # DEBUG: Log database update
-    return "Nutritional info added to Nutrition table"    
+    return True    
 
 
 @app.post("/receipt")
