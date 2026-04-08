@@ -2,7 +2,7 @@ import unittest as ut
 from nutritioninfo import save_pantry_item
 from api import get_pantry_items
 from accounts import login, register
-from api import analyze_food_image, analyze_receipt_image
+from api import analyze_food_image, analyze_receipt_image, get_nutritional_info
 import asyncio
 from PIL import Image
 import psycopg2
@@ -45,6 +45,11 @@ class TestAccounts(ut.TestCase):
         result = await analyze_receipt_image(img)
         print(result)
 
+    async def test_get_nutrition_info(self):
+        result = await get_nutritional_info("burger")
+        print(result)
+
+
 # TestAccounts().test_register()
 #TestAccounts().test_register_existing_email()
 #TestAccounts().test_login_success()
@@ -53,4 +58,5 @@ class TestAccounts(ut.TestCase):
 #TestAccounts().test_save_pantry_item()
 #asyncio.run(TestAccounts().test_analyze_receipt_image())
 
-TestAccounts().test_get_pantry_items()
+#TestAccounts().test_get_pantry_items()
+asyncio.run(TestAccounts().test_get_nutrition_info())

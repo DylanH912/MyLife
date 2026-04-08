@@ -22,7 +22,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+conn = psycopg2.connect(db.databaseURL)
+cursor = conn.cursor()
 
 class UserAuth(BaseModel):
     email: str
@@ -53,11 +54,44 @@ async def analyze_food_image(file: UploadFile = File(...)): # FIXED: Now accepts
         probability = parsed_response.get("probability", 0)
         if category == "Unknown" or probability < 0.5:
             print("Low confidence in category prediction, returning 'Unknown'") # DEBUG: Log low confidence cases
-        return {"category": category, "probability": probability}
+        else:
+            return (get_nutritional_info(category))
     except Exception as e:
         # This will show you the real error from Spoonacular if it fails
         detail = response.text if 'response' in locals() else str(e)
         raise HTTPException(status_code=500, detail=detail)
+    
+def get_nutritional_info(food_name):
+    print("In get_nutritional_info") # DEBUG: Log entry into the function
+    endpoint = f"https://api.spoonacular.com/recipes/guessNutrition?title=${food_name}&apiKey={os.getenv('SPOON_API_KEY')}"
+    response = requests.get(endpoint)
+    print(response.text) # DEBUG: Print the raw response from Spoonacular for nutritional info
+    response.raise_for_status()
+    data = response.json()
+    calories = data.get("calories", {}).get("value", 0)
+    protein = data.get("protein", {}).get("value", 0)
+    carbs = data.get("carbs", {}).get("value", 0)
+    fat = data.get("fat", {}).get("value", 0)
+    if calories > 0 or protein > 0: # Basic check to see if we got valid nutritional info
+        print(f"Retrieved nutritional info for {food_name}: Calories={calories}, Protein={protein}, Fat={fat}, Carbs={carbs}") # DEBUG: Log retrieved nutritional info
+        return post_nutritional_info(food_name, calories, protein, fat, carbs)
+    else:
+        print(f"No nutritional info found for {food_name}") # DEBUG: Log when no info is found
+        return "error" # Default values if no match found
+    
+def post_nutritional_info(food_name, calories, protein, fat, carbs):
+    print("In post_nutritional_info")
+    conn = psycopg2.connect(db.databaseURL)
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO nutrition (food_name, calories, protein, fat, carbs) VALUES (%s, %s, %s, %s, %s)",
+        (food_name, calories, protein, fat, carbs)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+    print("Updated pantry with nutritional info") # DEBUG: Log database update
+    return "Nutritional info added to Nutrition table"    
 
 
 @app.post("/receipt")
@@ -79,16 +113,26 @@ async def analyze_receipt_image(file: UploadFile = File(...), mode: str = Form(.
     time.sleep(5)  # FIXED: Wait for processing
     result = requests.get(endpoint, headers=headers)
     result.raise_for_status()
-    print(result.text) # DEBUG: Print the raw response from Tabscanner
-    parsed = result.json()
-    
-    return result.text
+    print(result.json()) # DEBUG: Print the raw response from Tabscanner
+    food_items = simplify_receipt(result.json())
+    print(f"Extracted food items: {food_items}") # DEBUG: Log extracted food items
+    return food_items
+
+def simplify_receipt(data):
+    line_items = data.get("result", {}).get("lineItems", [])
+    return [
+        {
+            "name": item.get("desc"),
+        }
+        for item in line_items
+        if item.get("lineTotal", 0) > 0  # filter out $0 supplementary lines
+    ]
+
 
 @app.get("/pantry")
 def get_pantry_items():
     conn = psycopg2.connect(db.databaseURL)
     cursor = conn.cursor()
-    
     cursor.execute("SELECT food_name, quantity FROM pantry")
     items = cursor.fetchall()
 
