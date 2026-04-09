@@ -117,6 +117,8 @@ async def analyze_receipt_image(file: UploadFile = File(...), mode: str = Form(.
     print(result.json()) # DEBUG: Print the raw response from Tabscanner
     food_items = simplify_receipt(result.json())
     print(f"Extracted food items: {food_items}") # DEBUG: Log extracted food items
+    for item in food_items:
+        save_pantry_item(item["name"], 1)  # Default quantity to 1 for simplicity
     return food_items
 
 def simplify_receipt(data):
@@ -126,8 +128,26 @@ def simplify_receipt(data):
             "name": item.get("desc"),
         }
         for item in line_items
-        if item.get("lineTotal", 0) > 0  # filter out $0 supplementary lines
+            if item.get("lineTotal", 0) > 0  # filter out $0 supplementary lines
     ]
+
+def save_pantry_item(food_name, quantity):
+    conn = psycopg2.connect(db.databaseURL)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        INSERT INTO pantry (food_name, quantity)
+        VALUES (%s, %s)
+        ON CONFLICT (food_name)
+        DO UPDATE SET quantity = pantry.quantity + EXCLUDED.quantity
+        """,
+        (food_name, quantity)
+    )
+
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 
 @app.get("/pantry")
