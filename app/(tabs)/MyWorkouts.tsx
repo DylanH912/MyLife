@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import WorkoutStartModal from "../../components/WorkoutStartModal";
 import {
   Text,
   FlatList,
@@ -12,8 +13,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import workouts from "../../assets/workouts.json";
 
-// I moved the Workout type outside the component because it doesn't need to be
-// recreated every render. This is a small cleanup that also makes the file easier to read.
 type Workout = {
   id: string;
   name: string;
@@ -31,8 +30,7 @@ type Workout = {
   score?: number;
 };
 
-
-const MAX_SCORE = 14;
+const MAX_SCORE = 10;
 
 export default function WorkoutListScreen() {
   // Make Modal visible when user presses "Adjust Goals" button, and hide it when they complete the flow or press outside.
@@ -70,7 +68,7 @@ export default function WorkoutListScreen() {
   const sortedWorkouts = useMemo<Workout[]>(() => {
     return [...(workouts as Workout[])]
       .map((w) => {
-        // Simple scoring: integer points per match, capped at MAX_SCORE
+        // scoring
         let score = 0;
 
         // muscles: 3 points per matching muscle
@@ -139,17 +137,17 @@ export default function WorkoutListScreen() {
         `Mechanics: ${item.mechanics}`,
         `Force Type: ${item.force_type}`,
         `MET: ${item.met}`,
-        `Compatibility Score: ${item.score ?? 0}/${MAX_SCORE}`,
+        `Compatibility Score: ${Math.round(((item.score ?? 0) / MAX_SCORE) * 100)}%`,
       ].join("\n")
     );
   };
 
-  const renderItem: ListRenderItem<Workout> = ({ item, index }) => {
-    const score = item.score ?? 0;
-    const accentColor = getAccentColorForScore(score, MAX_SCORE);
+  const renderItem: ListRenderItem<Workout> = ({ item, index }) => { // Render each workout card
+    const score = item.score ?? 0; // default to 0 if score is undefined
+    const accentColor = getAccentColorForScore(score, MAX_SCORE); 
 
     return (
-      <TouchableOpacity
+      <TouchableOpacity 
         activeOpacity={0.88}
         onPress={() => showWorkoutDetails(item)}
         style={[
@@ -163,15 +161,11 @@ export default function WorkoutListScreen() {
           </View>
 
           <View style={[styles.scorePill, { backgroundColor: accentColor }]}>
-            <Text style={styles.scorePillText}>{score}/{MAX_SCORE}</Text>
+            <Text style={styles.scorePillText}>{Math.round((score / MAX_SCORE) * 100)}%</Text>
           </View>
         </View>
 
         <Text style={styles.title}>{item.name}</Text>
-
-        <Text style={styles.subtitle}>
-          {item.category} • {item.difficulty} • MET {item.met}
-        </Text>
 
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Targets</Text>
@@ -197,14 +191,9 @@ export default function WorkoutListScreen() {
           </View>
 
           <View style={styles.metaBlock}>
-            <Text style={styles.metaLabel}>Force Type</Text>
-            <Text style={styles.metaValue}>{item.force_type}</Text>
+            <Text style={styles.metaLabel}>Difficulty</Text>
+            <Text style={styles.metaValue}>{item.difficulty}</Text>
           </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Programs</Text>
-          <Text style={styles.sectionText}>{item.programs.join(", ")}</Text>
         </View>
 
         <Text style={styles.tapHint}>Tap for full details</Text>
@@ -212,11 +201,63 @@ export default function WorkoutListScreen() {
     );
   };
 
-  return (
+  return ( 
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <View style={styles.onlyTitleContainer}>
-        <Text style={styles.header}>in Suttons branch</Text>
-      </View>
+      <WorkoutStartModal
+        visible={showModal}
+        onClose={() => setShowModal(false)}
+        onComplete={(planTags, muscle) => {
+          setSelectedPlanTags(planTags);
+          setSelectedMuscle(muscle);
+          setShowModal(false);
+        }}
+      />
+
+      <FlatList // Render the list of workouts
+        data={sortedWorkouts}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View style={styles.hero}>
+            <Text style={styles.eyebrow}>Workout Planner</Text>
+            <Text style={styles.header}>Find the best-fit workout for today</Text>
+            <Text style={styles.description}>
+              Your workouts are ranked by compatibility with your current goals.
+            </Text>
+
+            <Pressable
+              style={styles.adjustButton}
+              onPress={() => setShowModal(true)}
+            >
+              <Text style={styles.adjustButtonText}>Define Workout</Text>
+            </Pressable>
+
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryTitle}>Current focus</Text>
+
+              <View style={styles.chipWrap}>
+                {selectedPlanTags?.length
+                  ? selectedPlanTags.map(renderChip)
+                  : renderChip("No plan selected")}
+
+                {selectedMuscle
+                  ? renderChip(selectedMuscle)
+                  : renderChip("No muscle selected")}
+              </View>
+
+              {topWorkout ? ( 
+                <Text style={styles.summaryHint}>
+                  Top match: <Text style={styles.summaryHintBold}>{topWorkout.name}</Text>
+                </Text>
+              ) : null}
+            </View>
+
+            <Text style={styles.resultsLabel}>Recommended workouts</Text>
+          </View>
+        }
+      />
     </SafeAreaView>
   );
 }
@@ -349,12 +390,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 12,
     fontWeight: "800",
-  },
-  onlyTitleContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
   },
   title: {
     fontSize: 20,
