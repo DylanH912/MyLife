@@ -68,7 +68,7 @@ export default function WorkoutListScreen() {
   const sortedWorkouts = useMemo<Workout[]>(() => {
     return [...(workouts as Workout[])]
       .map((w) => {
-        // Simple scoring: integer points per match, capped at MAX_SCORE
+        // scoring
         let score = 0;
 
         // muscles: 3 points per matching muscle
@@ -231,7 +231,7 @@ export default function WorkoutListScreen() {
               style={styles.adjustButton}
               onPress={() => setShowModal(true)}
             >
-              <Text style={styles.adjustButtonText}>Adjust Goals</Text>
+              <Text style={styles.adjustButtonText}>Define Workout</Text>
             </Pressable>
 
             <View style={styles.summaryCard}>
