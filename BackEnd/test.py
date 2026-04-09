@@ -1,9 +1,11 @@
 import unittest as ut
 from nutritioninfo import save_pantry_item
+from api import get_pantry_items
 from accounts import login, register
-from api import analyze_food_image, analyze_receipt_image
+from api import analyze_food_image, analyze_receipt_image, get_nutritional_info
 import asyncio
 from PIL import Image
+import psycopg2
 
 class TestAccounts(ut.TestCase):
     def test_register(self):
@@ -31,11 +33,22 @@ class TestAccounts(ut.TestCase):
     def test_save_pantry_item(self):
         save_pantry_item("Test Food", 2)
 
+    def test_get_pantry_items(self):
+        items = get_pantry_items()
+        print(items)
+        self.assertTrue(len(items) >= 1)
+        
+
     async def test_analyze_receipt_image(self):
-        img = Image.open("C:\MyLife\BackEnd\R.jpg")
-        img.save("C:\MyLife\BackEnd\R.jpg")
+        img = Image.open(r"C:\MyLife\BackEnd\R.jpg")
+        img.save(r"C:\MyLife\BackEnd\R.jpg")
         result = await analyze_receipt_image(img)
         print(result)
+
+    async def test_get_nutrition_info(self):
+        result = await get_nutritional_info("burger")
+        print(result)
+
 
 # TestAccounts().test_register()
 #TestAccounts().test_register_existing_email()
@@ -43,4 +56,7 @@ class TestAccounts(ut.TestCase):
 #TestAccounts().test_login_invalid_credentials()
 
 #TestAccounts().test_save_pantry_item()
-asyncio.run(TestAccounts().test_analyze_receipt_image())
+#asyncio.run(TestAccounts().test_analyze_receipt_image())
+
+#TestAccounts().test_get_pantry_items()
+asyncio.run(TestAccounts().test_get_nutrition_info())
