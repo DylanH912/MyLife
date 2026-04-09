@@ -32,4 +32,4 @@ python -m fastapi run api.py
 
 
 python -m fastapi run api.py --host 0.0.0.0 --port 8000
-python -m uvicorn api:app --host 0.0.0.0 --port 8000 //run uvicorn with app, instead of fastapi
+python -m uvicorn api:app --host 0.0.0.0 --port 8000          //run uvicorn with app instead of fastapi
