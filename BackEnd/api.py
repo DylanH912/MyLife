@@ -96,7 +96,8 @@ def post_nutritional_info(food_name, calories, protein, fat, carbs):
 
 
 @app.post("/receipt")
-async def analyze_receipt_image(file: UploadFile = File(...), mode: str = Form(...), extraflag = False): # FIXED: Now accepts a real file upload
+@app.post("/receipt")
+async def analyze_receipt_image(file: UploadFile = File(...)): 
     url = "https://api.tabscanner.com/api/2/process/"  # FIXED: Tabscanner API endpoint
     result_url = "https://api.tabscanner.com/api/result/{0}"
     print(os.getenv("TABSCANNER_API_KEY"))
