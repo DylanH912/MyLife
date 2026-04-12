@@ -7,7 +7,8 @@ import {
   Image,
   Text,
   Button,
-  ActivityIndicator, // Added for the spinner
+  ActivityIndicator,
+  TextInput, // Added for the spinner
 } from "react-native";
 import { useRef, useState } from "react";
 import { CameraView, useCameraPermissions } from "expo-camera";
@@ -18,6 +19,8 @@ export default function Tabs() {
   const [mode, setMode] = useState<"food" | "receipt">("food");
   const [loading, setLoading] = useState(false); // Added loading state
   const [permission, requestPermission] = useCameraPermissions();
+  const [manualInputVisible, setManualInputVisible] = useState(false);
+  const [manualFood, setManualFood] = useState("");
 
   const EXPO_PUBLIC_API_URL = "http://140.104.38.113:8000";
 
@@ -70,14 +73,13 @@ export default function Tabs() {
 
       const data = await response.json();
 
-      if (response.ok) {
-        Alert.alert(
-          `${mode === "food" ? "Food" : "Receipt"} Result`,
-          JSON.stringify(data, null, 2)
-        );
+      if (data.needs_input) {
+        setManualInputVisible(true);
+      } else if (data.success) {
+        Alert.alert("Food Result", JSON.stringify(data.data, null, 2));
       } else {
-        Alert.alert("Server Error", JSON.stringify(data));
-      }
+        Alert.alert("Error", data.message || "Unknown error");
+}
     } catch (err) {
       console.error(err);
       Alert.alert("Network Error", "Check server connection or IP address");
@@ -96,6 +98,19 @@ export default function Tabs() {
       </View>
     );
   }
+
+  const submitManualFood = async () => {
+    const response = await fetch(`${EXPO_PUBLIC_API_URL}/food-text`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ food_name: manualFood }),
+    });
+
+    const data = await response.json();
+    
+    setManualInputVisible(false);
+    setManualFood("");
+  };
 
   return (
     <View style={styles.container}>
@@ -127,6 +142,18 @@ export default function Tabs() {
             <Ionicons name="camera" size={32} color="black" />
           )}
         </TouchableOpacity>
+
+        {manualInputVisible && (
+          <View style={styles.modal}>
+            <Text>Enter food name:</Text>
+            <TextInput
+              value={manualFood}
+              onChangeText={setManualFood}
+              placeholder="e.g. burger"
+            />
+            <Button title="Submit" onPress={submitManualFood} />
+          </View>
+        )}
       </View>
     </View>
   );
@@ -161,5 +188,20 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'white'
   },
+
+  modal: {
+    position: "absolute",
+    top: "30%",
+    left: "10%",
+    right: "10%",
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
+    elevation: 5, // Android shadow
+    shadowColor: "#000", // iOS shadow
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
+  
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
 });

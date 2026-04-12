@@ -53,18 +53,33 @@ async def analyze_food_image(file: UploadFile = File(...)): # FIXED: Now accepts
         category = parsed_response.get("category", "Unknown")
         probability = parsed_response.get("probability", 0)
         if category == "Unknown" or probability < 0.5:
-            print("Low confidence in category prediction, returning 'Unknown'")
-            return False # DEBUG: Log low confidence cases
+            return {
+                "success": False,
+                "needs_input": True,
+                "message": "Low confidence, please enter food name"
+            }
         else:
-            return (get_nutritional_info(category))
+            return {
+                "success": True,
+                "data": get_nutritional_info(category),
+            }
     except Exception as e:
         # This will show you the real error from Spoonacular if it fails
         detail = response.text if 'response' in locals() else str(e)
         raise HTTPException(status_code=500, detail=detail)
     
+@app.post("/food-text")
+async def analyze_food_text(food_name: str)
+    try:
+        return get_nutritional_info(food_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+        
+    
 def get_nutritional_info(food_name):
     print("In get_nutritional_info") # DEBUG: Log entry into the function
-    endpoint = f"https://api.spoonacular.com/recipes/guessNutrition?title=${food_name}&apiKey={os.getenv('SPOON_API_KEY')}"
+    endpoint = f"https://api.spoonacular.com/recipes/guessNutrition?title={food_name}&apiKey={os.getenv('SPOON_API_KEY')}"
     response = requests.get(endpoint)
     print(response.text) # DEBUG: Print the raw response from Spoonacular for nutritional info
     response.raise_for_status()
