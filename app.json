@@ -37,11 +37,17 @@
           "backgroundColor": "#208AEF",
           "android": {}
         }
+      ],
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "Allow MyLife to access your camera"
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": false
     }
   }
 }
