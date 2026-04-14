@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
 
-const EXPO_PUBLIC_API_URL = "http://192.168.68.54:8000"; // CHANGE: Use your machine's local IP address and port where FastAPI is running
+const EXPO_PUBLIC_API_URL = "http://140.104.38.113:8000"; // CHANGE: Use your machine's local IP address and port where FastAPI is running
 
 type PantryItem = {
-    food_name: string; // or "name" depending on your backend
+    food_name: string;
     quantity: number;
 };
 
