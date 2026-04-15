@@ -14,10 +14,19 @@ const MyFridge = () => {
     const endpoint = "/pantry";
 
     useEffect(() => {
-    fetch(`${EXPO_PUBLIC_API_URL}${endpoint}`)
-        .then((res) => res.json())
-        .then((data) => setItems(data))
-        .catch((err) => console.error(err));
+        console.log("Fetching pantry from:", `${EXPO_PUBLIC_API_URL}${endpoint}`); //Debug
+        fetch(`${EXPO_PUBLIC_API_URL}${endpoint}`)
+            .then((res) => {
+                console.log("Response status:", res.status); //Debug
+                return res.json();
+            })
+            .then((data) => {
+                console.log("Pantry data received:", data); //Debug
+                setItems(data);
+            })
+            .catch((err) => {
+                console.error("FETCH ERROR: ",err);
+            });
     }, []);
 
     return (

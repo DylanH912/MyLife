@@ -153,6 +153,8 @@ def save_pantry_item(food_name, quantity):
 
 @app.get("/pantry")
 def get_pantry_items():
+    print ("pantry endpoint hit") #Debug
+
     conn = psycopg2.connect(db.databaseURL)
     cursor = conn.cursor()
     cursor.execute("SELECT food_name, quantity FROM pantry")
