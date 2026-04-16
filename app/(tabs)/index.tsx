@@ -19,7 +19,7 @@ export default function Tabs() {
   const [loading, setLoading] = useState(false); // Added loading state
   const [permission, requestPermission] = useCameraPermissions();
 
-  const EXPO_PUBLIC_API_URL = "http://140.104.36.205:8000";
+  const EXPO_PUBLIC_API_URL = "http://140.104.38.113:8000";
 
   const toggleMode = () => {
     setMode((prev) => (prev === "food" ? "receipt" : "food"));
