@@ -6,9 +6,9 @@ def register(email, password):
     encrypted_password = encrypt(password.encode()).hexdigest()
     if not check_email_exists(email):
         save_user_to_database(email, encrypted_password)
-        return "Registration successful"
+        return True
     else:
-        return "E-Mail already exists, please login instead"
+        return False
 
 def check_email_exists(email):
     for user in get_users_from_database():

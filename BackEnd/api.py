@@ -64,7 +64,7 @@ async def analyze_food_image(file: UploadFile = File(...)): # FIXED: Now accepts
     
 def get_nutritional_info(food_name):
     print("In get_nutritional_info") # DEBUG: Log entry into the function
-    endpoint = f"https://api.spoonacular.com/recipes/guessNutrition?title=${food_name}&apiKey={os.getenv('SPOON_API_KEY')}"
+    endpoint = f"https://api.spoonacular.com/recipes/guessNutrition?title={food_name}&apiKey={os.getenv('SPOON_API_KEY')}"
     response = requests.get(endpoint)
     print(response.text) # DEBUG: Print the raw response from Spoonacular for nutritional info
     response.raise_for_status()
@@ -95,7 +95,6 @@ def post_nutritional_info(food_name, calories, protein, fat, carbs):
     return True    
 
 
-@app.post("/receipt")
 @app.post("/receipt")
 async def analyze_receipt_image(file: UploadFile = File(...)): 
     url = "https://api.tabscanner.com/api/2/process/"  # FIXED: Tabscanner API endpoint

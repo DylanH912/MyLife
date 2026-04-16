@@ -23,7 +23,8 @@
         "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.MyLife"
+      "package": "com.anonymous.MyLife",
+      "usesCleartextTraffic": true
     },
     "web": {
       "output": "static",
