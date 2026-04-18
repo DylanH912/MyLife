@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import {
+    View,
+    Text,
+    FlatList,
+    StyleSheet,
+    SafeAreaView,
+    ActivityIndicator,
+    TouchableOpacity,
+    Alert,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
-const EXPO_PUBLIC_API_URL = "http://140.104.38.113:8000"; // CHANGE: Use your machine's local IP address and port where FastAPI is running
+const EXPO_PUBLIC_API_URL = "http://140.104.38.113:8000";
 
 type PantryItem = {
     food_name: string;
@@ -10,56 +20,239 @@ type PantryItem = {
 
 const MyFridge = () => {
     const [items, setItems] = useState<PantryItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [removing, setRemoving] = useState<string | null>(null);
 
-    const endpoint = "/pantry";
+    const fetchPantry = () => {
+    setLoading(true);
+    fetch(`${EXPO_PUBLIC_API_URL}/pantry`)
+        .then((res) => res.json())
+        .then((data) => {
+            setItems(data);
+            setLoading(false);
+        })
+        .catch((err) => {
+            console.error("FETCH ERROR:", err);
+            setLoading(false);
+    });
+    };
 
     useEffect(() => {
-        console.log("Fetching pantry from:", `${EXPO_PUBLIC_API_URL}${endpoint}`); //Debug
-        fetch(`${EXPO_PUBLIC_API_URL}${endpoint}`)
-            .then((res) => {
-                console.log("Response status:", res.status); //Debug
-                return res.json();
-            })
-            .then((data) => {
-                console.log("Pantry data received:", data); //Debug
-                setItems(data);
-            })
-            .catch((err) => {
-                console.error("FETCH ERROR: ",err);
-            });
+    fetchPantry();
     }, []);
 
-    return (
-    <View style={styles.container}>
-        <Text style={styles.title}>My Pantry</Text>
+    const removeItem = (food_name: string) => {
+    Alert.alert("Remove Item", `Remove "${food_name}" from your pantry?`, [
+        { text: "Cancel", style: "cancel" },
+        {
+        text: "Remove",
+        style: "destructive",
+        onPress: async () => {
+            setRemoving(food_name);
+            const amount = 1
+            try {
+            const response = await fetch(
+                `${EXPO_PUBLIC_API_URL}/delete/${encodeURIComponent(food_name)}/${encodeURIComponent(amount)}`,
+                { method: "DELETE" }
+            );
+            if (response.ok) {
+                setItems((prev) => prev.filter((i) => i.food_name !== food_name));
+            } else {
+                Alert.alert("Error", "Could not remove item.");
+            }
+            } catch (err) {
+            Alert.alert("Network Error", "Check server connection.");
+            } finally {
+            setRemoving(null);
+            }
+        },
+        },
+    ]);
+    };
 
-        <FlatList
-        data={items}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-            <Text style={styles.item}>
-            {item.food_name} - {item.quantity}
-            </Text>
+    return (
+    <SafeAreaView style={styles.safe}>
+        <View style={styles.container}>
+
+        {/* Header */}
+        <View style={styles.header}>
+            <View>
+                <Text style={styles.title}>My Pantry</Text>
+                <Text style={styles.subtitle}>
+                    {items.length} item{items.length !== 1 ? "s" : ""}
+                </Text>
+            </View>
+            <TouchableOpacity style={styles.refreshButton} onPress={fetchPantry} disabled={loading}>
+                <Ionicons name="refresh" size={20} color={loading ? "#555" : "#fff"} />
+            </TouchableOpacity>
+        </View>
+
+        {/* Content */}
+        {loading ? (
+            <View style={styles.centered}>
+                <ActivityIndicator size="large" color="rgba(255,255,255,0.7)" />
+            </View>
+        ) : items.length === 0 ? (
+            <View style={styles.centered}>
+                <Ionicons name="basket-outline" size={52} color="rgba(255,255,255,0.2)" />
+                <Text style={styles.emptyText}>Your pantry is empty</Text>
+                <Text style={styles.emptyHint}>Scan food with the camera to add items</Text>
+            </View>
+        ) : (
+            <FlatList
+            data={items}
+            keyExtractor={(_, index) => index.toString()}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+                <View style={styles.card}>
+                {/* Icon swatch */}
+                <View style={styles.iconSwatch}>
+                    <Ionicons name="nutrition-outline" size={18} color="rgba(255,255,255,0.6)" />
+                </View>
+
+                {/* Name */}
+                <Text style={styles.foodName} numberOfLines={1}>
+                    {item.food_name}
+                </Text>
+
+                {/* Quantity badge */}
+                <View style={styles.quantityBadge}>
+                    <Text style={styles.quantityText}>×{item.quantity}</Text>
+                </View>
+
+                {/* Remove button */}
+                <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => removeItem(item.food_name)}
+                    disabled={removing === item.food_name}
+                >
+                    {removing === item.food_name ? (
+                    <ActivityIndicator size="small" color="rgba(255,255,255,0.5)" />
+                    ) : (
+                    <Ionicons name="trash-outline" size={16} color="rgba(255,80,80,0.85)" />
+                    )}
+                </TouchableOpacity>
+                </View>
+            )}
+            />
         )}
-        />
-    </View>
-    );
+        </View>
+    </SafeAreaView>
+);
 };
 
 export default MyFridge;
 
 const styles = StyleSheet.create({
+    safe: {
+        flex: 1,
+        backgroundColor: "#111",
+    },
     container: {
         flex: 1,
-        padding: 20,
+        paddingHorizontal: 20,
+        paddingTop: 24,
+    },
+
+  // Header
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 20,
     },
     title: {
-        fontSize: 24,
-        fontWeight: "bold",
-        marginBottom: 10,
+        fontSize: 28,
+        fontWeight: "800",
+        color: "#fff",
+        letterSpacing: -0.5,
     },
-    item: {
-        fontSize: 18,
-        marginBottom: 5,
+    subtitle: {
+        fontSize: 13,
+        color: "rgba(255,255,255,0.4)",
+        marginTop: 2,
+        fontWeight: "500",
+    },
+    refreshButton: {
+        padding: 10,
+        backgroundColor: "rgba(255,255,255,0.1)",
+        borderRadius: 30,
+    },
+
+    // List
+    listContent: {
+        paddingBottom: 40,
+        gap: 8,
+    },
+
+    // Card
+    card: {
+        backgroundColor: "rgba(255,255,255,0.07)",
+        borderRadius: 14,
+        paddingVertical: 13,
+        paddingHorizontal: 14,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.08)",
+    },
+    iconSwatch: {
+        width: 36,
+        height: 36,
+        borderRadius: 9,
+        backgroundColor: "rgba(255,255,255,0.08)",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    foodName: {
+        flex: 1,
+        fontSize: 15,
+        fontWeight: "600",
+        color: "#fff",
+        letterSpacing: -0.1,
+    },
+    quantityBadge: {
+        backgroundColor: "rgba(255,255,255,0.1)",
+        borderRadius: 8,
+        paddingHorizontal: 9,
+        paddingVertical: 4,
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.12)",
+    },
+    quantityText: {
+        fontSize: 12,
+        fontWeight: "700",
+        color: "rgba(255,255,255,0.7)",
+    },
+    removeButton: {
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        backgroundColor: "rgba(255,60,60,0.1)",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+
+  // States
+    centered: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 10,
+        paddingBottom: 60,
+    },
+    emptyText: {
+        fontSize: 17,
+        fontWeight: "700",
+        color: "rgba(255,255,255,0.5)",
+        marginTop: 8,
+    },
+    emptyHint: {
+        fontSize: 13,
+        color: "rgba(255,255,255,0.25)",
+        textAlign: "center",
+        paddingHorizontal: 40,
     },
 });
