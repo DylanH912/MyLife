@@ -52,11 +52,19 @@ const MyFridge = () => {
             const amount = 1
             try {
             const response = await fetch(
-                `${EXPO_PUBLIC_API_URL}/delete/${encodeURIComponent(food_name)}/${encodeURIComponent(amount)}`,
+                `${EXPO_PUBLIC_API_URL}/pantry/${encodeURIComponent(food_name)}/${encodeURIComponent(amount)}`,
                 { method: "DELETE" }
             );
             if (response.ok) {
-                setItems((prev) => prev.filter((i) => i.food_name !== food_name));
+                setItems((prev) =>
+                    prev
+                        .map((item) =>
+                            item.food_name === food_name
+                                ? { ...item, quantity: item.quantity - 1 }
+                                : item
+                        )
+    .filter((item) => item.quantity > 0)
+);
             } else {
                 Alert.alert("Error", "Could not remove item.");
             }
