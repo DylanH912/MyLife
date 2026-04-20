@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, Modal, TouchableOpacity, StyleSheet, FlatList } from "react-native";
+import React, { useState, useEffect, useMemo } from "react";
+import { View, Text, Modal, TouchableOpacity, StyleSheet, FlatList, Pressable } from "react-native";
 
 type Props = {
   visible: boolean;
@@ -7,9 +7,11 @@ type Props = {
   onComplete: (planTags: string[], muscle: string) => void; // Called when the user completes the flow with their selections
 };
 
-// Plan tags are used to match workouts to the user's selected plan. For example, 
-// if they select "Full Body", we want to prioritize workouts that target "full body", "core", "glutes", etc. 
-// This is a simplified mapping and can be expanded with more plans and tags as needed.
+type WorkoutPlan = { label: string; value: string[]; subtitle?: string };
+type MuscleOption = { label: string; value: string };
+type Step = "plans" | "muscles";
+
+
 const PLAN_TAGS: Record<string, string[]> = {
   "Full Body": ["full body", "core", "glutes", "hamstrings", "quads", "shoulders"],
   "Upper Body": ["chest", "back", "shoulders", "arms", "triceps", "biceps"],
@@ -19,12 +21,13 @@ const PLAN_TAGS: Record<string, string[]> = {
   "Leg Day": ["quads", "glutes", "hamstrings", "calves"],
 };
 
-const workoutPlans = Object.keys(PLAN_TAGS).map((label) => ({
+const workoutPlans: WorkoutPlan[] = Object.keys(PLAN_TAGS).map((label) => ({
   label,
   value: PLAN_TAGS[label],
+  subtitle: PLAN_TAGS[label].slice(0, 4).join(", "),
 }));
 
-const muscleOptions = [ 
+const muscleOptions: MuscleOption[] = [ 
   { label: "Chest", value: "chest" },
   { label: "Back", value: "back" },
   { label: "Shoulders", value: "shoulders" },
@@ -36,20 +39,55 @@ const muscleOptions = [
   { label: "Core", value: "core" },
 ];
 
-export default function WorkoutStartModal({ visible, onClose, onComplete }: Props) {
-  const [step, setStep] = useState<"ask" | "plans" | "muscles">("ask");
-  const [selectedPlanTags, setSelectedPlanTags] = useState<string[] | null>(null);
+const allMuscleOptions = muscleOptions;
 
-  const handleStart = () => setStep("plans");
+export default function WorkoutStartModal({
+  visible,
+  onClose,
+  onComplete,
+}: Props) {
+  const [step, setStep] = useState<Step>("plans");
+  const [selectedPlan, setSelectedPlan] = useState<WorkoutPlan | null>(null);
 
-  const handlePlanSelect = (plan: { label: string; value: string[] }) => {
-    setSelectedPlanTags(plan.value);
+  useEffect(() => {
+    if (visible) {
+      setStep("plans");
+      setSelectedPlan(null);
+    }
+  }, [visible]);
+
+  const filteredMuscleOptions = useMemo(() => {
+    if (!selectedPlan) return allMuscleOptions;
+
+    return allMuscleOptions.filter((muscle) => {
+      if (selectedPlan.label === "Upper Body") {
+        return ["chest", "back", "shoulders", "arms"].includes(muscle.value);
+      }
+
+      if (selectedPlan.label === "Lower Body" || selectedPlan.label === "Leg Day") {
+        return ["glutes", "quads", "hamstrings", "calves"].includes(muscle.value);
+      }
+
+      if (selectedPlan.label === "Push Day") {
+        return ["chest", "shoulders", "arms"].includes(muscle.value);
+      }
+
+      if (selectedPlan.label === "Pull Day") {
+        return ["back", "shoulders", "arms"].includes(muscle.value);
+      }
+
+      return selectedPlan.value.includes(muscle.value) || muscle.value === "core";
+    });
+  }, [selectedPlan]);
+
+  const handlePlanSelect = (plan: WorkoutPlan) => {
+    setSelectedPlan(plan);
     setStep("muscles");
   };
 
-  const handleMuscleSelect = (muscle: { label: string; value: string }) => {
-    if (selectedPlanTags) {
-      onComplete(selectedPlanTags, muscle.value);
+  const handleMuscleSelect = (muscle: MuscleOption) => {
+    if (selectedPlan) {
+      onComplete(selectedPlan.value, muscle.value);
     }
     onClose();
   };
@@ -58,33 +96,41 @@ export default function WorkoutStartModal({ visible, onClose, onComplete }: Prop
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.modal}>
-          {step === "ask" && (
-            <>
-              <Text style={styles.title}>Start a workout?</Text>
-              <View style={styles.row}>
-                <TouchableOpacity style={styles.button} onPress={handleStart}>
-                  <Text style={styles.buttonText}>Yes</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.button} onPress={onClose}>
-                  <Text style={styles.buttonText}>No</Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
-
           {step === "plans" && (
             <>
-              <Text style={styles.title}>Choose a workout plan</Text>
+              <View style={styles.headerRow}>
+                <View style={styles.headerTextWrap}>
+                  <Text style={styles.eyebrow}>Workout Planner</Text>
+                  <Text style={styles.title}>What type of workout are you looking for?</Text>
+                  <Text style={styles.description}>
+                    Choose the workout structure you want for today.
+                  </Text>
+                </View>
+
+                <Pressable onPress={onClose} style={styles.closeButton}>
+                  <Text style={styles.closeButtonText}>Close</Text>
+                </Pressable>
+              </View>
+
               <FlatList
                 data={workoutPlans}
                 keyExtractor={(item) => item.label}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.listContent}
                 renderItem={({ item }) => (
                   <TouchableOpacity
-                    style={styles.listItem}
+                    activeOpacity={0.9}
+                    style={styles.largeCard}
                     onPress={() => handlePlanSelect(item)}
                   >
-                    <Text>{item.label}</Text>
+                    <View style={styles.cardTopRow}>
+                      <Text style={styles.cardTitle}>{item.label}</Text>
+                      <View style={styles.badge}>
+                        <Text style={styles.badgeText}>Plan</Text>
+                      </View>
+                    </View>
+
+                    <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
                   </TouchableOpacity>
                 )}
               />
@@ -93,16 +139,48 @@ export default function WorkoutStartModal({ visible, onClose, onComplete }: Prop
 
           {step === "muscles" && (
             <>
-              <Text style={styles.title}>Which muscles do you want to work?</Text>
+              <View style={styles.headerRow}>
+                <View style={styles.headerTextWrap}>
+                  <Text style={styles.eyebrow}>Muscle Focus</Text>
+                  <Text style={styles.title}>Which muscles do you want to work?</Text>
+                  <Text style={styles.description}>
+                    Pick the main area you want this workout to focus on.
+                  </Text>
+                </View>
+
+                <Pressable onPress={() => setStep("plans")} style={styles.closeButton}>
+                  <Text style={styles.closeButtonText}>Back</Text>
+                </Pressable>
+              </View>
+
+              {selectedPlan ? (
+                <View style={styles.summaryCard}>
+                  <Text style={styles.summaryTitle}>{selectedPlan.label}</Text>
+                  <Text style={styles.summaryText}>{selectedPlan.subtitle}</Text>
+                </View>
+              ) : null}
+
               <FlatList
-                data={muscleOptions}
+                data={filteredMuscleOptions}
                 keyExtractor={(item) => item.label}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.listContent}
                 renderItem={({ item }) => (
                   <TouchableOpacity
-                    style={styles.listItem}
+                    activeOpacity={0.9}
+                    style={styles.largeCard}
                     onPress={() => handleMuscleSelect(item)}
                   >
-                    <Text>{item.label}</Text>
+                    <View style={styles.cardTopRow}>
+                      <Text style={styles.cardTitle}>{item.label}</Text>
+                      <View style={styles.badge}>
+                        <Text style={styles.badgeText}>Focus</Text>
+                      </View>
+                    </View>
+
+                    <Text style={styles.cardSubtitle}>
+                      Use {item.label.toLowerCase()} as the main focus for today’s workout.
+                    </Text>
                   </TouchableOpacity>
                 )}
               />
@@ -117,40 +195,116 @@ export default function WorkoutStartModal({ visible, onClose, onComplete }: Prop
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(15, 23, 42, 0.42)",
     justifyContent: "center",
     padding: 20,
   },
   modal: {
-    backgroundColor: "white",
+    backgroundColor: "#F8FAFD",
     padding: 20,
-    borderRadius: 12,
-    maxHeight: "80%",
+    borderRadius: 24,
+    maxHeight: "84%",
+    borderWidth: 1,
+    borderColor: "#E6ECF5",
+  },
+  headerRow: {
+    marginBottom: 14,
+  },
+  headerTextWrap: {
+    marginBottom: 10,
+  },
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#4E6FAE",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 8,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-  },
-  button: {
-    backgroundColor: "#333",
-    padding: 12,
-    borderRadius: 8,
-    minWidth: 100,
-  },
-  buttonText: {
-    color: "white",
-    textAlign: "center",
-  },
-  listItem: {
-    padding: 12,
-    backgroundColor: "#eee",
-    borderRadius: 8,
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#14213D",
     marginBottom: 10,
+  },
+  description: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#5C677D",
+  },
+  closeButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "#EEF3FB",
+    borderRadius: 999,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  closeButtonText: {
+    color: "#355070",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  listContent: {
+    paddingBottom: 8,
+  },
+  summaryCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#E6ECF5",
+  },
+  summaryTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#14213D",
+    marginBottom: 6,
+  },
+  summaryText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#5C677D",
+  },
+  largeCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 18,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#E6ECF5",
+    minHeight: 108,
+    justifyContent: "center",
+  },
+  cardTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 8,
+  },
+  cardTitle: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#14213D",
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#5C677D",
+  },
+  badge: {
+    backgroundColor: "#EEF3FB",
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#355070",
+    textTransform: "uppercase",
   },
 });

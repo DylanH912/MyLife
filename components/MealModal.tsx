@@ -12,7 +12,7 @@ import {
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onComplete: (tags: string[]) => void;
+  onComplete: (mealTags: string[]) => void;
 };
 
 type MealTagOption = {
@@ -51,23 +51,16 @@ export default function MealModal({
   }, [visible]);
 
   const toggleTag = (tag: string) => {
-    setSelectedTags((current) =>
+    setSelectedTags((current: string[]) =>
       current.includes(tag)
         ? current.filter((item) => item !== tag)
         : [...current, tag]
     );
   };
 
-  const handleCancel = () => {
-    if (typeof onClose === "function") {
-      onClose();
-    }
-  };
-
   const handleComplete = () => {
-    if (typeof onComplete === "function") {
-      onComplete([...selectedTags]);
-    }
+    const tags: string[] = [...selectedTags];
+    onComplete(tags);
   };
 
   return (
@@ -83,7 +76,7 @@ export default function MealModal({
               </Text>
             </View>
 
-            <Pressable onPress={handleCancel} style={styles.closeButton}>
+            <Pressable onPress={onClose} style={styles.closeButton}>
               <Text style={styles.closeButtonText}>Close</Text>
             </Pressable>
           </View>
@@ -123,7 +116,7 @@ export default function MealModal({
           />
 
           <View style={styles.buttonRow}>
-            <Pressable style={styles.secondaryButton} onPress={handleCancel}>
+            <Pressable style={styles.secondaryButton} onPress={onClose}>
               <Text style={styles.secondaryButtonText}>Cancel</Text>
             </Pressable>
 

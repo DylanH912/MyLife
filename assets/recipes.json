@@ -1,0 +1,716 @@
+[
+  {
+    "name": "Grilled Chicken Quinoa Bowl",
+    "tags": ["High Protein", "Balanced", "Gluten-Free"],
+    "prep_time_minutes": 30,
+    "ingredients": ["1 cup quinoa","2 cups water","2 chicken breasts","1 tbsp olive oil","1 tsp garlic powder","1 tsp paprika","1 cup broccoli","1 cup cherry tomatoes","Salt","Pepper"],
+    "instructions": "Cook quinoa in water. Grill seasoned chicken. Steam broccoli. Assemble bowl."
+  },
+  {
+    "name": "Avocado Egg Toast",
+    "tags": ["Healthy Fats", "High Protein", "Quick"],
+    "prep_time_minutes": 10,
+    "ingredients": ["2 slices whole grain bread","1 avocado","2 eggs","Salt","Pepper"],
+    "instructions": "Toast bread. Mash avocado. Cook eggs and assemble."
+  },
+  {
+    "name": "Greek Yogurt Parfait",
+    "tags": ["High Protein", "Low Calorie", "Quick"],
+    "prep_time_minutes": 5,
+    "ingredients": ["1 cup Greek yogurt","1/2 cup berries","2 tbsp granola","1 tsp honey"],
+    "instructions": "Layer yogurt, berries, granola, and honey."
+  },
+  {
+    "name": "Lentil Vegetable Soup",
+    "tags": ["High Fiber", "Vegan", "Low Fat"],
+    "prep_time_minutes": 40,
+    "ingredients": ["1 cup lentils","1 carrot","1 celery stalk","1 onion","4 cups vegetable broth","Salt","Pepper"],
+    "instructions": "Cook vegetables, add lentils and broth, simmer until tender."
+  },
+  {
+    "name": "Baked Salmon with Asparagus",
+    "tags": ["High Protein", "Low Carb"],
+    "prep_time_minutes": 25,
+    "ingredients": ["2 salmon fillets","1 bunch asparagus","1 tbsp olive oil","1 lemon","Salt","Pepper"],
+    "instructions": "Bake at 400°F for 15 minutes with seasoning."
+  },
+
+  {
+    "name": "Chicken Stir Fry",
+    "tags": ["High Protein", "Low Calorie"],
+    "prep_time_minutes": 20,
+    "ingredients": ["2 chicken breasts","1 bell pepper","1 cup broccoli","2 tbsp soy sauce"],
+    "instructions": "Cook chicken, add vegetables and sauce, stir fry."
+  },
+  {
+    "name": "Oatmeal with Berries",
+    "tags": ["High Fiber", "Low Fat"],
+    "prep_time_minutes": 10,
+    "ingredients": ["1/2 cup oats","1 cup milk","1/2 cup berries"],
+    "instructions": "Cook oats and top with berries."
+  },
+  {
+    "name": "Turkey Lettuce Wraps",
+    "tags": ["Low Carb", "High Protein"],
+    "prep_time_minutes": 20,
+    "ingredients": ["1 lb ground turkey","lettuce leaves","1 tbsp soy sauce"],
+    "instructions": "Cook turkey and serve in lettuce."
+  },
+  {
+    "name": "Chickpea Salad",
+    "tags": ["High Fiber", "Vegan"],
+    "prep_time_minutes": 10,
+    "ingredients": ["1 can chickpeas","1 cucumber","1 tomato","1 tbsp olive oil"],
+    "instructions": "Mix all ingredients."
+  },
+  {
+    "name": "Egg White Omelette",
+    "tags": ["Low Calorie", "High Protein"],
+    "prep_time_minutes": 10,
+    "ingredients": ["4 egg whites","spinach","mushrooms"],
+    "instructions": "Cook vegetables and add egg whites."
+  },
+
+  {
+    "name": "Banana Protein Pancakes",
+    "tags": ["High Protein", "Healthy"],
+    "prep_time_minutes": 15,
+    "ingredients": ["1 banana","2 eggs","1 scoop protein powder"],
+    "instructions": "Blend and cook like pancakes."
+  },
+  {
+    "name": "Stuffed Bell Peppers",
+    "tags": ["Balanced", "High Protein"],
+    "prep_time_minutes": 35,
+    "ingredients": ["4 bell peppers","1 lb ground turkey","1 cup brown rice","tomato sauce"],
+    "instructions": "Stuff peppers and bake 30 minutes."
+  },
+  {
+    "name": "Shrimp Stir Fry",
+    "tags": ["High Protein", "Low Calorie"],
+    "prep_time_minutes": 20,
+    "ingredients": ["1 lb shrimp","mixed vegetables","2 tbsp soy sauce"],
+    "instructions": "Cook shrimp, add vegetables and sauce."
+  },
+  {
+    "name": "Protein Smoothie",
+    "tags": ["High Protein", "Quick"],
+    "prep_time_minutes": 5,
+    "ingredients": ["1 scoop protein powder","1 banana","1 cup almond milk"],
+    "instructions": "Blend until smooth."
+  },
+  {
+    "name": "Zucchini Noodles",
+    "tags": ["Low Carb", "Low Calorie"],
+    "prep_time_minutes": 15,
+    "ingredients": ["2 zucchinis","1 cup marinara"],
+    "instructions": "Spiralize and cook with sauce."
+  },
+
+  {
+    "name": "Tuna Salad Lettuce Boats",
+    "tags": ["High Protein", "Low Carb"],
+    "prep_time_minutes": 10,
+    "ingredients": ["1 can tuna","2 tbsp Greek yogurt","lettuce"],
+    "instructions": "Mix tuna and serve in lettuce."
+  },
+  {
+    "name": "Brown Rice Veggie Bowl",
+    "tags": ["High Fiber", "Vegan"],
+    "prep_time_minutes": 25,
+    "ingredients": ["1 cup brown rice","mixed vegetables","soy sauce"],
+    "instructions": "Cook rice and mix with vegetables."
+  },
+  {
+    "name": "Apple Peanut Butter Snack",
+    "tags": ["Healthy Fats", "Quick"],
+    "prep_time_minutes": 5,
+    "ingredients": ["1 apple","2 tbsp peanut butter"],
+    "instructions": "Slice and serve."
+  },
+  {
+    "name": "Cottage Cheese Bowl",
+    "tags": ["High Protein", "Low Calorie"],
+    "prep_time_minutes": 5,
+    "ingredients": ["1 cup cottage cheese","fruit"],
+    "instructions": "Combine and serve."
+  },
+  {
+    "name": "Spinach Smoothie",
+    "tags": ["High Fiber", "Vegan"],
+    "prep_time_minutes": 5,
+    "ingredients": ["spinach","banana","almond milk"],
+    "instructions": "Blend."
+  },
+
+  {
+    "name": "Chicken Burrito Bowl",
+    "tags": ["High Protein", "Balanced"],
+    "prep_time_minutes": 30,
+    "ingredients": ["chicken","rice","beans","corn","salsa"],
+    "instructions": "Cook chicken and assemble bowl."
+  },
+  {
+    "name": "Egg Muffins",
+    "tags": ["High Protein", "Meal Prep"],
+    "prep_time_minutes": 25,
+    "ingredients": ["eggs","spinach","cheese"],
+    "instructions": "Bake egg mixture in muffin tins."
+  },
+  {
+    "name": "Sweet Potato Fries",
+    "tags": ["Healthy", "Low Fat"],
+    "prep_time_minutes": 30,
+    "ingredients": ["sweet potatoes","olive oil"],
+    "instructions": "Bake at 425°F until crispy."
+  },
+  {
+    "name": "Quinoa Salad",
+    "tags": ["High Fiber", "Vegan"],
+    "prep_time_minutes": 20,
+    "ingredients": ["quinoa","cucumber","tomato","olive oil"],
+    "instructions": "Cook quinoa and mix ingredients."
+  },
+  {
+    "name": "Chicken Caesar Wrap",
+    "tags": ["High Protein"],
+    "prep_time_minutes": 15,
+    "ingredients": ["chicken","tortilla","lettuce","caesar dressing"],
+    "instructions": "Wrap ingredients together."
+  },
+
+  {
+    "name": "Beef and Broccoli",
+    "tags": ["High Protein", "Low Carb"],
+    "prep_time_minutes": 20,
+    "ingredients": ["beef","broccoli","soy sauce"],
+    "instructions": "Cook beef and broccoli together."
+  },
+  {
+    "name": "Veggie Omelette",
+    "tags": ["Low Calorie", "High Protein"],
+    "prep_time_minutes": 10,
+    "ingredients": ["eggs","peppers","onions"],
+    "instructions": "Cook vegetables and eggs."
+  },
+  {
+    "name": "Overnight Oats",
+    "tags": ["High Fiber", "Meal Prep"],
+    "prep_time_minutes": 5,
+    "ingredients": ["oats","milk","chia seeds"],
+    "instructions": "Mix and refrigerate overnight."
+  },
+  {
+    "name": "Chicken Soup",
+    "tags": ["Low Calorie", "Comfort"],
+    "prep_time_minutes": 40,
+    "ingredients": ["chicken","carrots","celery","broth"],
+    "instructions": "Simmer all ingredients."
+  },
+  {
+    "name": "Fruit Smoothie Bowl",
+    "tags": ["Healthy", "Quick"],
+    "prep_time_minutes": 10,
+    "ingredients": ["frozen fruit","yogurt"],
+    "instructions": "Blend and top."
+  },
+
+  {
+    "name": "Baked Cod",
+    "tags": ["High Protein", "Low Fat"],
+    "prep_time_minutes": 20,
+    "ingredients": ["cod","lemon","olive oil"],
+    "instructions": "Bake until flaky."
+  },
+  {
+    "name": "Turkey Chili",
+    "tags": ["High Protein", "High Fiber"],
+    "prep_time_minutes": 45,
+    "ingredients": ["ground turkey","beans","tomatoes"],
+    "instructions": "Cook and simmer."
+  },
+  {
+    "name": "Veggie Wrap",
+    "tags": ["Vegan", "Low Calorie"],
+    "prep_time_minutes": 10,
+    "ingredients": ["tortilla","vegetables","hummus"],
+    "instructions": "Wrap ingredients."
+  },
+  {
+    "name": "Chicken Pasta (Whole Wheat)",
+    "tags": ["Balanced"],
+    "prep_time_minutes": 25,
+    "ingredients": ["chicken","whole wheat pasta","sauce"],
+    "instructions": "Cook and mix."
+  },
+  {
+    "name": "Rice and Beans",
+    "tags": ["High Fiber", "Vegan"],
+    "prep_time_minutes": 20,
+    "ingredients": ["rice","beans"],
+    "instructions": "Cook and combine."
+  },
+
+  {
+    "name": "Hard Boiled Eggs",
+    "tags": ["High Protein", "Quick"],
+    "prep_time_minutes": 10,
+    "ingredients": ["eggs"],
+    "instructions": "Boil eggs for 8-10 minutes."
+  },
+  {
+    "name": "Protein Oatmeal",
+    "tags": ["High Protein", "High Fiber"],
+    "prep_time_minutes": 10,
+    "ingredients": ["oats","protein powder"],
+    "instructions": "Cook oats and mix protein."
+  },
+  {
+    "name": "Grilled Shrimp Tacos",
+    "tags": ["High Protein"],
+    "prep_time_minutes": 20,
+    "ingredients": ["shrimp","tortillas","cabbage"],
+    "instructions": "Grill shrimp and assemble tacos."
+  },
+  {
+    "name": "Chicken Salad",
+    "tags": ["High Protein"],
+    "prep_time_minutes": 15,
+    "ingredients": ["chicken","greens","dressing"],
+    "instructions": "Mix ingredients."
+  },
+  {
+    "name": "Veggie Stir Fry",
+    "tags": ["Vegan", "Low Calorie"],
+    "prep_time_minutes": 15,
+    "ingredients": ["vegetables","soy sauce"],
+    "instructions": "Stir fry vegetables."
+  },
+
+  {
+    "name": "Peanut Butter Banana Toast",
+    "tags": ["Healthy Fats"],
+    "prep_time_minutes": 5,
+    "ingredients": ["bread","peanut butter","banana"],
+    "instructions": "Toast and assemble."
+  },
+  {
+    "name": "Chicken Fajita Bowl",
+    "tags": ["High Protein"],
+    "prep_time_minutes": 25,
+    "ingredients": ["chicken","peppers","rice"],
+    "instructions": "Cook and combine."
+  },
+  {
+    "name": "Salmon Rice Bowl",
+    "tags": ["High Protein"],
+    "prep_time_minutes": 25,
+    "ingredients": ["salmon","rice"],
+    "instructions": "Cook and serve."
+  },
+  {
+    "name": "Greek Salad",
+    "tags": ["Low Calorie"],
+    "prep_time_minutes": 10,
+    "ingredients": ["cucumber","tomato","feta"],
+    "instructions": "Mix ingredients."
+  },
+  {
+    "name": "Chicken Wrap",
+    "tags": ["High Protein"],
+    "prep_time_minutes": 10,
+    "ingredients": ["chicken","wrap"],
+    "instructions": "Wrap ingredients."
+  },
+
+  {
+    "name": "Egg Fried Rice (Healthy)",
+    "tags": ["Balanced"],
+    "prep_time_minutes": 20,
+    "ingredients": ["rice","egg","vegetables"],
+    "instructions": "Cook and mix."
+  },
+  {
+    "name": "Baked Tofu",
+    "tags": ["Vegan", "High Protein"],
+    "prep_time_minutes": 25,
+    "ingredients": ["tofu","soy sauce"],
+    "instructions": "Bake until crispy."
+  },
+  {
+    "name": "Lentil Curry",
+    "tags": ["High Fiber", "Vegan"],
+    "prep_time_minutes": 35,
+    "ingredients": ["lentils","curry paste","coconut milk"],
+    "instructions": "Simmer until thick."
+  },
+  {
+    "name": "Chicken and Veggies",
+    "tags": ["Low Calorie", "High Protein"],
+    "prep_time_minutes": 25,
+    "ingredients": ["chicken","vegetables"],
+    "instructions": "Cook together."
+  },
+  {
+    "name": "Protein Bars (Homemade)",
+    "tags": ["High Protein"],
+    "prep_time_minutes": 15,
+    "ingredients": ["oats","protein powder","peanut butter"],
+    "instructions": "Mix and refrigerate."
+  }
+,
+{
+  "name": "Spicy Chicken Rice Bowl",
+  "tags": ["High Protein", "Balanced"],
+  "prep_time_minutes": 25,
+  "ingredients": ["chicken breast","rice","hot sauce","broccoli"],
+  "instructions": "Cook chicken with hot sauce, steam broccoli, serve over rice."
+},
+{
+  "name": "Almond Butter Toast",
+  "tags": ["Healthy Fats", "Quick"],
+  "prep_time_minutes": 5,
+  "ingredients": ["whole grain bread","almond butter"],
+  "instructions": "Toast bread and spread almond butter."
+},
+{
+  "name": "Berry Protein Smoothie",
+  "tags": ["High Protein", "Low Calorie"],
+  "prep_time_minutes": 5,
+  "ingredients": ["protein powder","mixed berries","almond milk"],
+  "instructions": "Blend until smooth."
+},
+{
+  "name": "Chicken Zucchini Skillet",
+  "tags": ["Low Carb", "High Protein"],
+  "prep_time_minutes": 20,
+  "ingredients": ["chicken","zucchini","olive oil","garlic"],
+  "instructions": "Cook chicken, add zucchini and garlic, sauté."
+},
+{
+  "name": "Black Bean Tacos",
+  "tags": ["High Fiber", "Vegan"],
+  "prep_time_minutes": 20,
+  "ingredients": ["black beans","tortillas","lettuce","salsa"],
+  "instructions": "Heat beans and assemble tacos."
+},
+{
+  "name": "Egg and Spinach Wrap",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 10,
+  "ingredients": ["eggs","spinach","tortilla"],
+  "instructions": "Cook eggs with spinach and wrap."
+},
+{
+  "name": "Cucumber Yogurt Dip",
+  "tags": ["Low Calorie", "Healthy"],
+  "prep_time_minutes": 10,
+  "ingredients": ["greek yogurt","cucumber","garlic"],
+  "instructions": "Mix all ingredients and chill."
+},
+{
+  "name": "Grilled Turkey Burger",
+  "tags": ["High Protein", "Low Fat"],
+  "prep_time_minutes": 20,
+  "ingredients": ["ground turkey","bun","lettuce","tomato"],
+  "instructions": "Grill turkey patty and assemble burger."
+},
+{
+  "name": "Quinoa Breakfast Bowl",
+  "tags": ["High Fiber", "Healthy"],
+  "prep_time_minutes": 20,
+  "ingredients": ["quinoa","milk","banana","honey"],
+  "instructions": "Cook quinoa and top with banana and honey."
+},
+{
+  "name": "Roasted Veggie Mix",
+  "tags": ["Vegan", "Low Calorie"],
+  "prep_time_minutes": 30,
+  "ingredients": ["broccoli","carrots","zucchini","olive oil"],
+  "instructions": "Roast vegetables at 400°F for 25 minutes."
+},
+
+{
+  "name": "Chicken Pita Pocket",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 15,
+  "ingredients": ["chicken","pita","lettuce","yogurt sauce"],
+  "instructions": "Fill pita with cooked chicken and toppings."
+},
+{
+  "name": "Peanut Butter Protein Shake",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 5,
+  "ingredients": ["protein powder","peanut butter","milk"],
+  "instructions": "Blend all ingredients."
+},
+{
+  "name": "Vegetable Soup",
+  "tags": ["Low Calorie", "Vegan"],
+  "prep_time_minutes": 35,
+  "ingredients": ["mixed vegetables","broth","spices"],
+  "instructions": "Simmer all ingredients."
+},
+{
+  "name": "Chicken and Rice Meal Prep",
+  "tags": ["High Protein", "Meal Prep"],
+  "prep_time_minutes": 40,
+  "ingredients": ["chicken","rice","vegetables"],
+  "instructions": "Cook and portion into containers."
+},
+{
+  "name": "Tofu Stir Fry",
+  "tags": ["Vegan", "High Protein"],
+  "prep_time_minutes": 20,
+  "ingredients": ["tofu","vegetables","soy sauce"],
+  "instructions": "Cook tofu and vegetables together."
+},
+{
+  "name": "Banana Oat Smoothie",
+  "tags": ["High Fiber"],
+  "prep_time_minutes": 5,
+  "ingredients": ["banana","oats","milk"],
+  "instructions": "Blend until smooth."
+},
+{
+  "name": "Egg Salad (Healthy)",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 10,
+  "ingredients": ["eggs","greek yogurt","mustard"],
+  "instructions": "Mix ingredients."
+},
+{
+  "name": "Shrimp Avocado Salad",
+  "tags": ["Healthy Fats", "High Protein"],
+  "prep_time_minutes": 15,
+  "ingredients": ["shrimp","avocado","greens"],
+  "instructions": "Combine ingredients."
+},
+{
+  "name": "Turkey Meatballs",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 30,
+  "ingredients": ["ground turkey","breadcrumbs","egg"],
+  "instructions": "Form meatballs and bake."
+},
+{
+  "name": "Rice Cake Snack",
+  "tags": ["Low Calorie", "Quick"],
+  "prep_time_minutes": 5,
+  "ingredients": ["rice cakes","peanut butter"],
+  "instructions": "Spread peanut butter on rice cakes."
+},
+
+{
+  "name": "Chicken Veggie Pasta",
+  "tags": ["Balanced", "High Protein"],
+  "prep_time_minutes": 25,
+  "ingredients": ["chicken","pasta","vegetables"],
+  "instructions": "Cook and mix ingredients."
+},
+{
+  "name": "Lentil Salad",
+  "tags": ["High Fiber", "Vegan"],
+  "prep_time_minutes": 20,
+  "ingredients": ["lentils","tomatoes","olive oil"],
+  "instructions": "Mix cooked lentils with ingredients."
+},
+{
+  "name": "Protein French Toast",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 15,
+  "ingredients": ["bread","eggs","protein powder"],
+  "instructions": "Dip bread and cook."
+},
+{
+  "name": "Veggie Burrito",
+  "tags": ["Vegan", "High Fiber"],
+  "prep_time_minutes": 20,
+  "ingredients": ["beans","rice","vegetables","tortilla"],
+  "instructions": "Wrap all ingredients."
+},
+{
+  "name": "Chicken Soup (Light)",
+  "tags": ["Low Calorie"],
+  "prep_time_minutes": 40,
+  "ingredients": ["chicken","broth","vegetables"],
+  "instructions": "Simmer ingredients."
+},
+{
+  "name": "Greek Yogurt Smoothie",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 5,
+  "ingredients": ["greek yogurt","fruit","milk"],
+  "instructions": "Blend."
+},
+{
+  "name": "Roasted Chickpeas",
+  "tags": ["High Fiber", "Snack"],
+  "prep_time_minutes": 25,
+  "ingredients": ["chickpeas","olive oil","spices"],
+  "instructions": "Roast until crispy."
+},
+{
+  "name": "Chicken Tacos",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 20,
+  "ingredients": ["chicken","tortillas","lettuce"],
+  "instructions": "Cook chicken and assemble."
+},
+{
+  "name": "Veggie Omelette Wrap",
+  "tags": ["Low Calorie", "High Protein"],
+  "prep_time_minutes": 15,
+  "ingredients": ["eggs","vegetables","wrap"],
+  "instructions": "Cook omelette and wrap."
+},
+{
+  "name": "Fruit and Nut Bowl",
+  "tags": ["Healthy Fats"],
+  "prep_time_minutes": 5,
+  "ingredients": ["mixed fruit","nuts"],
+  "instructions": "Combine ingredients."
+},
+
+{
+  "name": "Chicken Alfredo (Light)",
+  "tags": ["High Protein", "Balanced"],
+  "prep_time_minutes": 30,
+  "ingredients": ["chicken","pasta","light cream sauce"],
+  "instructions": "Cook and combine."
+},
+{
+  "name": "Spinach Chickpea Curry",
+  "tags": ["Vegan", "High Fiber"],
+  "prep_time_minutes": 30,
+  "ingredients": ["chickpeas","spinach","curry sauce"],
+  "instructions": "Simmer ingredients."
+},
+{
+  "name": "Egg and Rice Bowl",
+  "tags": ["Balanced"],
+  "prep_time_minutes": 15,
+  "ingredients": ["rice","egg","soy sauce"],
+  "instructions": "Cook egg and serve over rice."
+},
+{
+  "name": "Turkey Wrap",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 10,
+  "ingredients": ["turkey","wrap","lettuce"],
+  "instructions": "Wrap ingredients."
+},
+{
+  "name": "Baked Chicken Tenders",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 25,
+  "ingredients": ["chicken","breadcrumbs"],
+  "instructions": "Bake until cooked."
+},
+{
+  "name": "Veggie Pizza (Healthy)",
+  "tags": ["Balanced"],
+  "prep_time_minutes": 30,
+  "ingredients": ["whole wheat crust","vegetables","cheese"],
+  "instructions": "Bake pizza."
+},
+{
+  "name": "Protein Energy Balls",
+  "tags": ["High Protein", "Snack"],
+  "prep_time_minutes": 15,
+  "ingredients": ["oats","peanut butter","protein powder"],
+  "instructions": "Mix and roll into balls."
+},
+{
+  "name": "Chicken Caesar Salad (Light)",
+  "tags": ["High Protein", "Low Calorie"],
+  "prep_time_minutes": 15,
+  "ingredients": ["chicken","lettuce","light dressing"],
+  "instructions": "Mix ingredients."
+},
+{
+  "name": "Rice and Chicken Stir Fry",
+  "tags": ["Balanced"],
+  "prep_time_minutes": 25,
+  "ingredients": ["chicken","rice","vegetables"],
+  "instructions": "Cook and mix."
+},
+{
+  "name": "Avocado Chicken Salad",
+  "tags": ["Healthy Fats", "High Protein"],
+  "prep_time_minutes": 15,
+  "ingredients": ["chicken","avocado","greens"],
+  "instructions": "Combine ingredients."
+},
+
+{
+  "name": "Vegetable Fried Rice (Healthy)",
+  "tags": ["Vegan", "Balanced"],
+  "prep_time_minutes": 20,
+  "ingredients": ["rice","vegetables","soy sauce"],
+  "instructions": "Cook and stir fry."
+},
+{
+  "name": "Protein Ice Cream (Homemade)",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 10,
+  "ingredients": ["frozen banana","protein powder"],
+  "instructions": "Blend until creamy."
+},
+{
+  "name": "Chicken and Sweet Potato Bowl",
+  "tags": ["Balanced", "High Protein"],
+  "prep_time_minutes": 30,
+  "ingredients": ["chicken","sweet potato","vegetables"],
+  "instructions": "Cook and assemble."
+},
+{
+  "name": "Egg Toast Sandwich",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 10,
+  "ingredients": ["eggs","bread"],
+  "instructions": "Cook eggs and assemble sandwich."
+},
+{
+  "name": "Shrimp Rice Bowl",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 20,
+  "ingredients": ["shrimp","rice"],
+  "instructions": "Cook and serve."
+},
+{
+  "name": "Veggie Power Bowl",
+  "tags": ["High Fiber", "Vegan"],
+  "prep_time_minutes": 25,
+  "ingredients": ["quinoa","vegetables","beans"],
+  "instructions": "Combine ingredients."
+},
+{
+  "name": "Chicken Noodle Soup (Light)",
+  "tags": ["Low Calorie"],
+  "prep_time_minutes": 40,
+  "ingredients": ["chicken","noodles","broth"],
+  "instructions": "Simmer ingredients."
+},
+{
+  "name": "Protein Waffles",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 20,
+  "ingredients": ["protein powder","flour","eggs"],
+  "instructions": "Mix and cook in waffle maker."
+},
+{
+  "name": "Tuna Rice Bowl",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 10,
+  "ingredients": ["tuna","rice"],
+  "instructions": "Combine ingredients."
+},
+{
+  "name": "Chicken Veggie Wrap",
+  "tags": ["High Protein"],
+  "prep_time_minutes": 15,
+  "ingredients": ["chicken","vegetables","wrap"],
+  "instructions": "Wrap ingredients."
+}
+]

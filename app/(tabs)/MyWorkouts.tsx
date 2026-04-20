@@ -30,7 +30,7 @@ type Workout = {
   score?: number;
 };
 
-const MAX_SCORE = 10;
+const MAX_SCORE = 7;
 
 export default function WorkoutListScreen() {
   // Make Modal visible when user presses "Adjust Goals" button, and hide it when they complete the flow or press outside.
@@ -66,51 +66,66 @@ export default function WorkoutListScreen() {
 
   //recalculate the user's selected tags change.
   const sortedWorkouts = useMemo<Workout[]>(() => {
-    return [...(workouts as Workout[])]
-      .map((w) => {
-        // scoring
-        let score = 0;
+  const normalizedPlanTags = (selectedPlanTags ?? []).map((tag) =>
+    String(tag).toLowerCase()
+  );
+  const normalizedSelectedMuscle = selectedMuscle?.toLowerCase() ?? null;
 
-        // muscles: 3 points per matching muscle
-        const muscleMatches = (w.muscles || []).filter((m) =>
-          userTags.includes(String(m).toLowerCase())
-        ).length;
-        score += muscleMatches * 3;
+  return [...(workouts as Workout[])]
+    .map((w) => {
+      let score = 0;
 
-        // goals: 2 points per matching goal
-        const goalMatches = (w.goals || []).filter((g) =>
-          userTags.includes(String(g).toLowerCase())
-        ).length;
-        score += goalMatches * 2;
+      const workoutMuscles = (w.muscles || []).map((m) => String(m).toLowerCase());
+      const workoutGoals = (w.goals || []).map((g) => String(g).toLowerCase());
+      const workoutPrograms = (w.programs || []).map((p) => String(p).toLowerCase());
+      const workoutCategory = String(w.category).toLowerCase();
+      const workoutMovement = String(w.movement_pattern).toLowerCase();
+      const workoutForceType = String(w.force_type).toLowerCase();
+      const workoutMechanics = String(w.mechanics).toLowerCase();
+      const workoutDifficulty = String(w.difficulty).toLowerCase();
+      const workoutEquipment = String(w.equipment).toLowerCase();
 
-        // category and movement_pattern: 2 and 1 points respectively
-        if (userTags.includes(String(w.category).toLowerCase())) score += 2;
-        if (userTags.includes(String(w.movement_pattern).toLowerCase())) score += 1;
+      normalizedPlanTags.forEach((tag) => {
+        if (workoutMuscles.includes(tag)) score += 2.5; 
+        if (workoutGoals.includes(tag)) score += 1.5;
+        if (workoutCategory === tag) score += 1.5;
+        if (workoutPrograms.includes(tag)) score += 1;
+        if (workoutMovement === tag) score += 0.5;
+        if (workoutForceType === tag) score += 0.5;
+        if (workoutMechanics === tag) score += 0.5;
+        if (workoutDifficulty === tag) score += 0.5;
 
-        // programs: 1 point per match
-        const programMatches = (w.programs || []).filter((p) =>
-          userTags.includes(String(p).toLowerCase())
-        ).length;
-        score += programMatches * 1;
+        if (
+          workoutEquipment === tag ||
+          (workoutEquipment === "bodyweight" && tag === "bodyweight")
+        ) {
+          score += 0.5;
+        }
+      });
 
-        // single-field matches: force_type, mechanics, difficulty -> +1 each
-        if (userTags.includes(String(w.force_type).toLowerCase())) score += 1;
-        if (userTags.includes(String(w.mechanics).toLowerCase())) score += 1;
-        if (userTags.includes(String(w.difficulty).toLowerCase())) score += 1;
+      if (normalizedSelectedMuscle) { // Give extra weight if the workout directly targets the selected muscle.
+        if (workoutMuscles.includes(normalizedSelectedMuscle)) score += 6; //Muscles Target
+        if (workoutGoals.includes(normalizedSelectedMuscle)) score += 2; //Goals
+        if (workoutCategory === normalizedSelectedMuscle) score += 1; //Category
+        if (workoutMovement === normalizedSelectedMuscle) score += 1;
+        if (workoutPrograms.includes(normalizedSelectedMuscle)) score += 1;
+      }
 
-        // equipment: treat bodyweight specially
-        const equip = String(w.equipment).toLowerCase();
-        if (equip === "bodyweight") {
-          if (userTags.includes("bodyweight")) score += 1;
-        } else if (userTags.includes(equip)) score += 1;
+      const targetScoreFor100 = 10; // This is the score at which we consider a workout a "100% match". 
 
-        // Cap to MAX_SCORE
-        const capped = Math.min(score, MAX_SCORE);
+      const normalizedScore = Math.round(
+        Math.min(score / targetScoreFor100, 1) * MAX_SCORE
+      );
 
-        return { ...w, score: capped };
-      })
-      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
-  }, [userTags]);
+      return {
+        ...w,
+        score: normalizedScore,
+      };
+    })
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+}, [selectedPlanTags, selectedMuscle]);
+
+
 
   const topWorkout = sortedWorkouts[0];
 
@@ -231,7 +246,7 @@ export default function WorkoutListScreen() {
               style={styles.adjustButton}
               onPress={() => setShowModal(true)}
             >
-              <Text style={styles.adjustButtonText}>Define Workout</Text>
+              <Text style={styles.adjustButtonText}>Define Workout Goals</Text>
             </Pressable>
 
             <View style={styles.summaryCard}>

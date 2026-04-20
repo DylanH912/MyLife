@@ -4,6 +4,7 @@
 -npm audit fix
 -npm run ios or android
 -npm install react-native-worklets-core
+-npm install react-native-svg
 -npx expo install expo-media-library
 -npx expo prebuild
 

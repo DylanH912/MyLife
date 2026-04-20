@@ -9,12 +9,11 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Svg, {
-  Circle,
-  Line,
-  Polyline,
-  Text as SvgText
-} from "react-native-svg";
+import Svg, { Circle, Line, Polyline, Text as SvgText } from "react-native-svg";
+import ProgressGoalsModal, {
+  GoalKey,
+  deriveNutritionTargets,
+} from "../../components/ProgressGoalsModal";
 
 type NutritionMetric = {
   key: string;
@@ -42,7 +41,7 @@ const todayNutritionFromDb = {
   fat: 58,
   fiber: 24,
 };
-// Simulated historical data for the past 6 days (including today)
+
 const calorieHistoryFromDb: CalorieEntry[] = [
   { date: "Apr 1", calories: 1740 },
   { date: "Apr 2", calories: 1890 },
@@ -52,7 +51,6 @@ const calorieHistoryFromDb: CalorieEntry[] = [
   { date: "Apr 6", calories: 1820 },
 ];
 
-// Simulated weight history for the past 6 days (including today)
 const initialWeightHistoryFromDb: WeightEntry[] = [
   { date: "Apr 1", weight: 187.4 },
   { date: "Apr 2", weight: 186.9 },
@@ -62,20 +60,20 @@ const initialWeightHistoryFromDb: WeightEntry[] = [
   { date: "Apr 6", weight: 185.9 },
 ];
 
-// Standard nutrition targets for a moderately active adult aiming for weight maintenance
-const nutritionTargets = {
-  calories: 2000,
-  protein: 140,
-  carbs: 220,
-  fat: 65,
-  fiber: 28,
+const goalLabels: Record<GoalKey, string> = {
+  maintain: "Maintain Weight",
+  lose: "Lose Weight",
+  gain: "Build Muscle",
+  protein: "Higher Protein",
+  fiber: "More Fiber",
+  balancedCarbs: "Balanced Carbs",
+  lowerFat: "Lower Fat",
+  consistency: "Consistent Logging",
 };
 
-// Utility function to clamp a value between a min and max
 const clamp = (value: number, min = 0, max = 1) =>
   Math.min(Math.max(value, min), max);
 
-// Utility function to format today's date as "Apr 6"
 const formatTodayLabel = () => {
   const today = new Date();
   return today.toLocaleDateString("en-US", {
@@ -84,13 +82,11 @@ const formatTodayLabel = () => {
   });
 };
 
-// Calculate progress towards a metric as a percentage (0 to 1)
 const getMetricProgress = (consumed: number, target: number) => {
   if (!target) return 0;
   return clamp(consumed / target);
 };
 
-// Calculate a "health score" for a metric based on how close the consumed value is to the target
 const getSmartMetricScore = (consumed: number, target: number) => {
   if (!target) return 0;
 
@@ -273,6 +269,18 @@ export default function ProgressionScreen() {
   );
   const [showWeightEntry, setShowWeightEntry] = useState(false);
   const [weightInput, setWeightInput] = useState("");
+  const [showGoalsModal, setShowGoalsModal] = useState(false);
+  const [selectedGoals, setSelectedGoals] = useState<GoalKey[]>([
+    "maintain",
+    "protein",
+    "fiber",
+    "consistency",
+  ]);
+
+  const nutritionTargets = useMemo(
+    () => deriveNutritionTargets(selectedGoals),
+    [selectedGoals]
+  );
 
   const metrics: NutritionMetric[] = [
     {
@@ -355,20 +363,20 @@ export default function ProgressionScreen() {
       nutritionTargets.fiber
     );
 
+    const consistencyWeight = selectedGoals.includes("consistency") ? 0.14 : 0.08;
+    const baseWeighted =
+      caloriesScore * 0.26 +
+      proteinScore * 0.22 +
+      carbsScore * 0.14 +
+      fatScore * 0.14 +
+      fiberScore * 0.16;
+
     const consistencyScore = Math.round(
       clamp(calorieHistoryFromDb.length / 7) * 100
     );
 
-    const weighted =
-      caloriesScore * 0.28 +
-      proteinScore * 0.22 +
-      carbsScore * 0.14 +
-      fatScore * 0.14 +
-      fiberScore * 0.14 +
-      consistencyScore * 0.08;
-
-    return Math.round(weighted);
-  }, []);
+    return Math.round(baseWeighted + consistencyScore * consistencyWeight);
+  }, [nutritionTargets, selectedGoals]);
 
   const goodHabits = useMemo(() => {
     const habits: string[] = [];
@@ -377,15 +385,15 @@ export default function ProgressionScreen() {
       todayNutritionFromDb.calories >= nutritionTargets.calories * 0.9 &&
       todayNutritionFromDb.calories <= nutritionTargets.calories * 1.1
     ) {
-      habits.push("Stayed close to the daily calorie target.");
+      habits.push("Stayed close to the calorie goal selected for today.");
     }
 
     if (todayNutritionFromDb.protein >= nutritionTargets.protein * 0.9) {
-      habits.push("Hit a strong protein intake for recovery and muscle support.");
+      habits.push("Protein intake is lining up well with the current nutrition goals.");
     }
 
     if (todayNutritionFromDb.fiber >= nutritionTargets.fiber * 0.8) {
-      habits.push("Fiber intake is in a healthy range today.");
+      habits.push("Fiber intake is supporting a strong day overall.");
     }
 
     if (calorieHistoryFromDb.length >= 5) {
@@ -396,38 +404,44 @@ export default function ProgressionScreen() {
       habits.push("Weight tracking is active, which improves progress accuracy.");
     }
 
-    return habits.length ? habits : ["You logged your intake today, which is a strong start."];
-  }, [weightHistory]);
+    return habits.length
+      ? habits
+      : ["You logged your intake today, which is a strong start."];
+  }, [nutritionTargets, weightHistory]);
 
   const improvements = useMemo(() => {
     const items: string[] = [];
 
     if (todayNutritionFromDb.calories < nutritionTargets.calories * 0.9) {
-      items.push("Calories are a bit low today. A balanced meal or snack could help.");
+      items.push("Calories are below the selected target range for today.");
     }
 
     if (todayNutritionFromDb.calories > nutritionTargets.calories * 1.1) {
-      items.push("Calories are trending above target. Watch portion sizes later today.");
+      items.push("Calories are above the selected target range for today.");
     }
 
     if (todayNutritionFromDb.protein < nutritionTargets.protein * 0.9) {
-      items.push("Protein is below target. Add a lean protein source to the next meal.");
+      items.push("Protein is under target. A lean protein source would help.");
     }
 
     if (todayNutritionFromDb.fiber < nutritionTargets.fiber * 0.8) {
-      items.push("Fiber is low. Add fruit, vegetables, beans, or oats.");
+      items.push("Fiber is low. Adding fruit, vegetables, beans, or oats would help.");
     }
 
     if (todayNutritionFromDb.fat > nutritionTargets.fat * 1.15) {
-      items.push("Fat intake is a little high relative to goal. Keep later meals lighter.");
+      items.push("Fat intake is running higher than the current goal range.");
     }
 
     if (weightHistory.length < 4) {
       items.push("Log weight more often for a clearer progress trend.");
     }
 
-    return items.length ? items : ["No major issues stand out today. Keep repeating these habits."];
-  }, [weightHistory]);
+    return items.length
+      ? items
+      : ["No major issues stand out today. Keep repeating these habits."];
+  }, [nutritionTargets, weightHistory]);
+
+  const goalSummary = selectedGoals.map((goal) => goalLabels[goal]);
 
   const saveWeightForToday = () => {
     const parsedWeight = Number(weightInput);
@@ -456,6 +470,16 @@ export default function ProgressionScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
+      <ProgressGoalsModal
+        visible={showGoalsModal}
+        selectedGoals={selectedGoals}
+        onClose={() => setShowGoalsModal(false)}
+        onSave={(goals) => {
+          setSelectedGoals(goals);
+          setShowGoalsModal(false);
+        }}
+      />
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
@@ -466,6 +490,24 @@ export default function ProgressionScreen() {
           <Text style={styles.description}>
             Today's nutrition breakdown, weight progress, and personalized insights to keep you on track.
           </Text>
+
+          <Pressable
+            style={styles.adjustButton}
+            onPress={() => setShowGoalsModal(true)}
+          >
+            <Text style={styles.adjustButtonText}>Adjust Goals</Text>
+          </Pressable>
+
+          <View style={styles.goalSummaryCard}>
+            <Text style={styles.summaryTitle}>Current goals</Text>
+            <View style={styles.chipWrap}>
+              {goalSummary.map((goal) => (
+                <View key={goal} style={styles.chip}>
+                  <Text style={styles.chipText}>{goal}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
 
           <View style={styles.summaryCard}>
             <Text style={styles.summaryTitle}>Today’s nutrition breakdown</Text>
@@ -579,10 +621,10 @@ export default function ProgressionScreen() {
 
           <View style={styles.scoreCard}>
             <View style={styles.scoreTopRow}>
-              <View>
+              <View style={styles.scoreCopy}>
                 <Text style={styles.summaryTitle}>Health score</Text>
                 <Text style={styles.summaryHint}>
-                  Built from calories, macro balance, fiber, and logging consistency.
+                  Built from calories, macros, fiber, and how well they match your selected goals.
                 </Text>
               </View>
 
@@ -664,6 +706,43 @@ const styles = StyleSheet.create({
     color: "#5C677D",
     marginTop: 10,
     marginBottom: 18,
+  },
+  adjustButton: {
+    backgroundColor: "#14213D",
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderRadius: 16,
+    alignSelf: "flex-start",
+    marginBottom: 14,
+  },
+  adjustButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  goalSummaryCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#E6ECF5",
+    marginBottom: 16,
+  },
+  chipWrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  chip: {
+    backgroundColor: "#EEF3FB",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+  },
+  chipText: {
+    color: "#355070",
+    fontSize: 13,
+    fontWeight: "600",
   },
   summaryCard: {
     backgroundColor: "#FFFFFF",
@@ -797,6 +876,9 @@ const styles = StyleSheet.create({
     gap: 14,
     alignItems: "center",
     marginBottom: 14,
+  },
+  scoreCopy: {
+    flex: 1,
   },
   scorePill: {
     backgroundColor: "#14213D",
