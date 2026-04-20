@@ -1,105 +1,147 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Image,
+  Text,
+  Button,
+  ActivityIndicator, // Added for the spinner
+} from "react-native";
 import { useRef, useState } from "react";
-import { Image } from "react-native";
-import * as FileSystem from "expo-file-system";
-import { CameraView, CameraViewHandle } from "../../components/MyCamera";
+import { CameraView, useCameraPermissions } from "expo-camera";
 
 export default function Tabs() {
-  const cameraRef = useRef<CameraViewHandle | null>(null);
+  const cameraRef = useRef<any>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [mode, setMode] = useState<"food" | "receipt">("food");
-  //const EXPO_PUBLIC_API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
-  const EXPO_PUBLIC_API_URL = "http://192.168.68.54:8000"; // CHANGE: Use your machine's local IP address and port where FastAPI is running
+  const [loading, setLoading] = useState(false); // Added loading state
+  const [permission, requestPermission] = useCameraPermissions();
+
+  const EXPO_PUBLIC_API_URL = "http://140.104.38.113:8000";
 
   const toggleMode = () => {
     setMode((prev) => (prev === "food" ? "receipt" : "food"));
-  }
+  };
 
   const takePicture = async () => {
+    if (loading) return; // Prevent double taps
+
     try {
-      const photo = await cameraRef.current?.takePhoto();
+      if (!cameraRef.current) {
+        Alert.alert("Camera not ready");
+        return;
+      }
+
+      setLoading(true); // Start spinner
+
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: 0.5, // Compressed for faster upload
+      });
 
       if (!photo?.uri) {
+        setLoading(false);
         Alert.alert("Error", "No photo captured");
         return;
       }
 
       setPhotoUri(photo.uri);
 
-      // CHANGE 1: Create FormData to hold the actual image file
       const formData = new FormData();
-      
-      // The key ("file") must match the variable name in your FastAPI function
       formData.append("file", {
         uri: photo.uri,
         name: "photo.jpg",
         type: "image/jpeg",
       } as any);
-
-      // CHANGE 2: Use POST method and send the formData as the body
-      // Also fixed the endpoints to match your API (/food and /receipt)
-      const endpoint = mode === "food" ? "/food" : "/receipt";
       
+      // Added this to satisfy your FastAPI backend requirements
+      formData.append("mode", mode); 
+
+      const endpoint = mode === "food" ? "/food" : "/receipt";
+
       const response = await fetch(`${EXPO_PUBLIC_API_URL}${endpoint}`, {
         method: "POST",
         body: formData,
         headers: {
-          "Accept": "application/json",
-          // Note: DO NOT set 'Content-Type': 'multipart/form-data' manually. 
-          // fetch will do it automatically with the correct "boundary".
+          Accept: "application/json",
         },
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        Alert.alert(`${mode === "food" ? "Food" : "Receipt"} Result`, JSON.stringify(data));
-      } else {
-        const errorText = await response.text();
-        Alert.alert("Server Error", errorText);
-      }
+      const data = await response.json();
 
+      if (response.ok) {
+        Alert.alert(
+          `${mode === "food" ? "Food" : "Receipt"} Result`,
+          JSON.stringify(data, null, 2)
+        );
+      } else {
+        Alert.alert("Server Error", JSON.stringify(data));
+      }
     } catch (err) {
       console.error(err);
-      Alert.alert("Network Error", "Check if your API is running and the IP address is correct.");
+      Alert.alert("Network Error", "Check server connection or IP address");
+    } finally {
+      setLoading(false); // Stop spinner
     }
   };
 
+  if (!permission) return null;
+
+  if (!permission.granted) {
+    return (
+      <View style={styles.center}>
+        <Text>Camera permission required</Text>
+        <Button title="Grant Permission" onPress={requestPermission} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <CameraView ref={cameraRef} />
+      <CameraView style={StyleSheet.absoluteFill} ref={cameraRef} facing="back" />
 
-      {photoUri && (
-        <Image source={{ uri: photoUri }} style={{ width: 100, height: 100 }} />
-      )}
+      <View style={styles.controls}>
+        {photoUri && <Image source={{ uri: photoUri }} style={styles.preview} />}
 
-      <TouchableOpacity style={styles.toggleButton} onPress={toggleMode}>
-        <Ionicons
-          name={mode === "food" ? "fast-food" : "receipt"}
-          size={24}
-          color="black"
-        />
-      </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.toggleButton} 
+          onPress={toggleMode}
+          disabled={loading}
+        >
+          <Ionicons
+            name={mode === "food" ? "fast-food" : "receipt"}
+            size={24}
+            color={loading ? "#ccc" : "black"}
+          />
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.cameraButton} onPress={takePicture}>
-        <Ionicons name="camera" size={32} color="black" />
-      </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.cameraButton, loading && { backgroundColor: '#ddd' }]} 
+          onPress={takePicture}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="black" />
+          ) : (
+            <Ionicons name="camera" size={32} color="black" />
+          )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
+  container: { flex: 1 },
+  controls: { flex: 1, backgroundColor: "transparent" },
   cameraButton: {
     position: "absolute",
     bottom: 24,
     alignSelf: "center",
-    padding: 12,
+    padding: 20, // Bigger hit area
     backgroundColor: "rgba(255,255,255,0.9)",
-    borderRadius: 40,
+    borderRadius: 50,
   },
   toggleButton: {
     position: "absolute",
@@ -109,5 +151,15 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.9)",
     borderRadius: 30,
   },
-
+  preview: {
+    position: "absolute",
+    top: 60,
+    left: 20,
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: 'white'
+  },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
 });

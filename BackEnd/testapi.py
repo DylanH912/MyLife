@@ -25,5 +25,5 @@ def test_analyze_food_image():
     #assert response.status_code == 200
     #print(response.json())
 
-test_analyze_receipt_image()
+test_analyze_food_image()
     
