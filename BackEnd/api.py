@@ -118,7 +118,8 @@ async def analyze_receipt_image(file: UploadFile = File(...)):
     food_items = simplify_receipt(result.json())
     print(f"Extracted food items: {food_items}") # DEBUG: Log extracted food items
     for item in food_items:
-        save_pantry_item(item["name"], 1)  # Default quantity to 1 for simplicity
+        if check_is_food(item["name"]):
+            save_pantry_item(item["name"], 1)  # Default quantity to 1 for simplicity
     return food_items
 
 def simplify_receipt(data):
@@ -130,6 +131,17 @@ def simplify_receipt(data):
         for item in line_items
             if item.get("lineTotal", 0) > 0  # filter out $0 supplementary lines
     ]
+
+def check_is_food(food_name):
+    url = "https://api.spoonacular.com/food/ingredients/search"
+    params = {
+        "query": food_name,
+        "number": 1,
+        "apiKey": os.getenv("SPOON_API_KEY")
+    }
+    response = requests.get(url, params=params)
+    data = response.json()
+    return data.get("totalResults", 0) > 0
 
 def save_pantry_item(food_name, quantity):
     conn = psycopg2.connect(db.databaseURL)
