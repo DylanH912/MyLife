@@ -39,7 +39,7 @@ def login_user(user: UserAuth): # FIXED: Uses the UserAuth model
 
 
 @app.post("/food")
-async def analyze_food_image(file: UploadFile = File(...)): # FIXED: Now accepts a real file upload
+async def food(file: UploadFile = File(...), mode: str = Form(...), userId: str = Form(...)): # FIXED: Now accepts a real file upload
     endpoint = f"https://api.spoonacular.com/food/images/classify?apiKey={os.getenv('SPOON_API_KEY')}"    
     content = await file.read()
     # Spoonacular expects the parameter name to be 'file'
@@ -56,13 +56,13 @@ async def analyze_food_image(file: UploadFile = File(...)): # FIXED: Now accepts
             print("Low confidence in category prediction, returning 'Unknown'")
             return False # DEBUG: Log low confidence cases
         else:
-            return (get_nutritional_info(category))
+            return (get_nutritional_info(category, userId))
     except Exception as e:
         # This will show you the real error from Spoonacular if it fails
         detail = response.text if 'response' in locals() else str(e)
         raise HTTPException(status_code=500, detail=detail)
     
-def get_nutritional_info(food_name):
+def get_nutritional_info(food_name, userId):
     print("In get_nutritional_info") # DEBUG: Log entry into the function
     endpoint = f"https://api.spoonacular.com/recipes/guessNutrition?title={food_name}&apiKey={os.getenv('SPOON_API_KEY')}"
     response = requests.get(endpoint)
@@ -75,28 +75,32 @@ def get_nutritional_info(food_name):
     fat = data.get("fat", {}).get("value", 0)
     if calories > 0 or protein > 0: # Basic check to see if we got valid nutritional info
         print(f"Retrieved nutritional info for {food_name}: Calories={calories}, Protein={protein}, Fat={fat}, Carbs={carbs}") # DEBUG: Log retrieved nutritional info
-        return post_nutritional_info(food_name, calories, protein, fat, carbs)
+        return post_nutritional_info(food_name, calories, protein, fat, carbs, userId)
     else:
         print(f"No nutritional info found for {food_name}") # DEBUG: Log when no info is found
         return False # Default values if no match found
     
-def post_nutritional_info(food_name, calories, protein, fat, carbs):
+def post_nutritional_info(food_name, calories, protein, fat, carbs, userId):
     print("In post_nutritional_info")
+    print(f"current userId value: '{userId}'") # DEBUG: Log the raw userId value received
+    userId = int(userId.strip()) if userId and userId.strip().isdigit() else None
+    print(f"Posting nutritional info for userId: {userId}") # DEBUG: Log the userId being used
     conn = psycopg2.connect(db.databaseURL)
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO nutrition (food_name, calories, protein, fat, carbs) VALUES (%s, %s, %s, %s, %s)",
-        (food_name, calories, protein, fat, carbs)
+        "INSERT INTO nutrition (food_name, calories, protein, fat, carbs, user_id) VALUES (%s, %s, %s, %s, %s, %s)",
+        (food_name, calories, protein, fat, carbs, userId)
     )
     conn.commit()
     cursor.close()
     conn.close()
     print("Updated pantry with nutritional info") # DEBUG: Log database update
-    return True    
+    return True
 
 
 @app.post("/receipt")
-async def analyze_receipt_image(file: UploadFile = File(...)): 
+async def analyze_receipt_image(file: UploadFile = File(...),  mode: str = Form(...), userId: str = Form(...)): 
+    userId = int(userId.strip()) if userId and userId.strip().isdigit() else None
     url = "https://api.tabscanner.com/api/2/process/"  # FIXED: Tabscanner API endpoint
     result_url = "https://api.tabscanner.com/api/result/{0}"
     print(os.getenv("TABSCANNER_API_KEY"))
@@ -118,7 +122,7 @@ async def analyze_receipt_image(file: UploadFile = File(...)):
     food_items = simplify_receipt(result.json())
     print(f"Extracted food items: {food_items}") # DEBUG: Log extracted food items
     for item in food_items:
-        save_pantry_item(item["name"], 1)  # Default quantity to 1 for simplicity
+        save_pantry_item(item["name"], 1, userId)  # Default quantity to 1 for simplicity
     return food_items
 
 def simplify_receipt(data):
@@ -131,18 +135,18 @@ def simplify_receipt(data):
             if item.get("lineTotal", 0) > 0  # filter out $0 supplementary lines
     ]
 
-def save_pantry_item(food_name, quantity):
+def save_pantry_item(food_name, quantity, userId):
     conn = psycopg2.connect(db.databaseURL)
     cursor = conn.cursor()
 
     cursor.execute(
         """
-        INSERT INTO pantry (food_name, quantity)
-        VALUES (%s, %s)
+        INSERT INTO pantry (food_name, quantity, user_id)
+        VALUES (%s, %s, %s)
         ON CONFLICT (food_name)
         DO UPDATE SET quantity = pantry.quantity + EXCLUDED.quantity
         """,
-        (food_name, quantity)
+        (food_name, quantity, userId)
     )
 
     conn.commit()
@@ -150,13 +154,14 @@ def save_pantry_item(food_name, quantity):
     conn.close()
 
 
-@app.get("/pantry")
-def get_pantry_items():
+@app.get("/pantry/{userId}")
+def get_pantry_items(userId: int):
     print ("pantry endpoint hit") #Debug
 
+    userId = int(userId.strip()) if userId and userId.strip().isdigit() else None
     conn = psycopg2.connect(db.databaseURL)
     cursor = conn.cursor()
-    cursor.execute("SELECT food_name, quantity FROM pantry")
+    cursor.execute("SELECT food_name, quantity FROM pantry where user_id = %s", (userId,))
     items = cursor.fetchall()
 
     cursor.close()

@@ -9,17 +9,23 @@ import {
   Button,
   ActivityIndicator, // Added for the spinner
 } from "react-native";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { useLocalSearchParams } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Tabs() {
+  const [userId, setUserId] = useState<string | null>(null);
+  useEffect(() => {
+    AsyncStorage.getItem("userId").then(setUserId);
+}, []);
   const cameraRef = useRef<any>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [mode, setMode] = useState<"food" | "receipt">("food");
   const [loading, setLoading] = useState(false); // Added loading state
   const [permission, requestPermission] = useCameraPermissions();
 
-  const EXPO_PUBLIC_API_URL = "http://140.104.38.113:8000";
+  const EXPO_PUBLIC_API_URL = "http://140.104.37.114:8000";
 
   const toggleMode = () => {
     setMode((prev) => (prev === "food" ? "receipt" : "food"));
@@ -56,7 +62,8 @@ export default function Tabs() {
       } as any);
       
       // Added this to satisfy your FastAPI backend requirements
-      formData.append("mode", mode); 
+      formData.append("mode", mode);
+      formData.append("userId", userId ?? ""); // Pass the userId to the backend 
 
       const endpoint = mode === "food" ? "/food" : "/receipt";
 

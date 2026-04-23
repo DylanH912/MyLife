@@ -29,9 +29,10 @@ def login(email, password):
     encrypted_password = encrypt(password.encode()).hexdigest()
     if check_email_exists(email):
         if check_credentials(email, encrypted_password):
-            return "Login successful"
+            id = get_user_id(email)
+            return id
         else:
-            return "Incorrect password"
+            return 0
     else:
         return "Email does not exist, please register first" 
 
@@ -50,3 +51,12 @@ def get_users_from_database():
     cursor.close()
     conn.close()
     return [{'email': user[0], 'password': user[1]} for user in users]
+
+def get_user_id(email):
+    conn = psycopg2.connect(db.databaseURL)
+    cursor = conn.cursor()
+    cursor.execute("SELECT user_id FROM users WHERE email = %s", (email,))
+    user_id = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return user_id[0] if user_id else None

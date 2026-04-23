@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const EXPO_PUBLIC_API_URL = "http://140.104.38.113:8000"; // CHANGE: Use your machine's local IP address and port where FastAPI is running
+const [userId, setUserId] = useState<string | null>(null);
+
+useEffect(() => {
+  AsyncStorage.getItem("userId").then(setUserId);
+}, []);
+
+const EXPO_PUBLIC_API_URL = "http://140.104.37.114:8000"; // CHANGE: Use your machine's local IP address and port where FastAPI is running
 
 type PantryItem = {
     food_name: string;
@@ -10,8 +18,7 @@ type PantryItem = {
 
 const MyFridge = () => {
     const [items, setItems] = useState<PantryItem[]>([]);
-
-    const endpoint = "/pantry";
+    const endpoint = `/pantry/${userId || "1"}`;
 
     useEffect(() => {
         console.log("Fetching pantry from:", `${EXPO_PUBLIC_API_URL}${endpoint}`); //Debug

@@ -11,8 +11,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_BASE = "http://140.104.37.131:8000";
+const API_BASE = "http://140.104.37.114:8000";
 
 async function apiRegister(email: string, password: string) {
   const controller = new AbortController();
@@ -157,8 +158,12 @@ export default function AuthScreen() {
         setConfirm("");
       } else {
         const result = await apiLogin(email.trim(), password);
-        Alert.alert("Logged in!", JSON.stringify(result));
-        router.replace("/(tabs)");
+        const idNumber = JSON.stringify(result);
+        Alert.alert("Logged in! Id: ", idNumber);
+        await AsyncStorage.setItem("userId", idNumber);
+        router.replace({
+          pathname: "/(tabs)"
+        });
       }
     } catch (err: any) {
       Alert.alert("Error", err.message ?? "Something went wrong.");
