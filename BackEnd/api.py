@@ -168,10 +168,11 @@ def get_pantry_items(userId: int):
 
     return [{"food_name": item[0], "quantity": item[1]} for item in items]
 
-@app.delete("/pantry/{food_name}/{amount}")
-def delete_pantry_item(food_name: str, amount: int):
+@app.delete("/pantry/{food_name}")
+def delete_pantry_item(food_name: str):
     conn = psycopg2.connect(db.databaseURL)
     cursor = conn.cursor()
+
     cursor.execute(
         "SELECT quantity FROM pantry WHERE food_name = %s",
         (food_name,)
@@ -181,8 +182,10 @@ def delete_pantry_item(food_name: str, amount: int):
         cursor.close()
         conn.close()
         return {"error": "Item not found"}
+
     current_quantity = result[0]
-    new_quantity = current_quantity - amount
+    new_quantity = current_quantity - 1  # always subtract 1
+
     if new_quantity <= 0:
         cursor.execute(
             "DELETE FROM pantry WHERE food_name = %s",
@@ -195,7 +198,9 @@ def delete_pantry_item(food_name: str, amount: int):
             (new_quantity, food_name)
         )
         message = f"{food_name} quantity updated to {new_quantity}"
+
     conn.commit()
     cursor.close()
     conn.close()
+
     return {"message": message}
