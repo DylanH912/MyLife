@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import WorkoutStartModal from "../../components/WorkoutStartModal";
 import {
   Text,
@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import workouts from "../../assets/workouts.json";
+
+const EXPO_PUBLIC_API_URL = "[140.104.38.113](http://140.104.38.113:8000)";
 
 type Workout = {
   id: string;
@@ -39,6 +41,8 @@ export default function WorkoutListScreen() {
   // These store what the user picked in the modal.
   const [selectedPlanTags, setSelectedPlanTags] = useState<string[] | null>(null);
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
+
+  const [dbGoals, setDbGoals] = useState<string[]>([]);
 
   //Choose a softer card color based on workout score.
   const getColorForScore = (score: number, maxScore: number) => {
@@ -70,6 +74,28 @@ export default function WorkoutListScreen() {
     String(tag).toLowerCase()
   );
   const normalizedSelectedMuscle = selectedMuscle?.toLowerCase() ?? null;
+
+  const userTags = [
+    ...dbGoals,
+    ...(selectedPlanTags ?? []),
+    selectedMuscle,
+  ].filter(Boolean).map(String);
+
+  useEffect(() => {
+    const fetchGoals = async () => {
+      try {
+        const user_id = 1; // GET ACTUAL USER ID
+        const res = await fetch(`${EXPO_PUBLIC_API_URL}/goals/${user_id}`);
+        const data = await res.json();
+        setDbGoals(data.goals || []);
+      } catch (err) {
+        console.error("Error fetching goals:", err);
+      }
+    };
+
+    fetchGoals();
+  }, []);
+
 
   return [...(workouts as Workout[])]
     .map((w) => {
@@ -221,10 +247,29 @@ export default function WorkoutListScreen() {
       <WorkoutStartModal
         visible={showModal}
         onClose={() => setShowModal(false)}
-        onComplete={(planTags, muscle) => {
+        onComplete={async (planTags, muscle) => {
           setSelectedPlanTags(planTags);
           setSelectedMuscle(muscle);
           setShowModal(false);
+
+          try {
+            const goalsArray = [
+              ...(planTags ?? []),
+              ...muscle ? [muscle] : [],
+            ]
+            const user_id = 1; // GET ACTUAL USER ID
+            await fetch(`${EXPO_PUBLIC_API_URL}/goals/add/${user_id}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+              goals: planTags,
+            }),
+          });
+          } catch (err) {
+            console.error("Failed to save goals:", err);
+          }
         }}
       />
 

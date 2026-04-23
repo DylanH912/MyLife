@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import requests
@@ -12,6 +14,10 @@ import psycopg2
 import json
 import database as db
 load_dotenv()
+
+class GoalsRequest(BaseModel):
+    goals: list[str]
+    user_id: int
 
 app = FastAPI()
 
@@ -225,22 +231,26 @@ def remove_goal(user_id, text):
     conn.close()
     return {"message": "Goal removed from array"}
 
-@app.post("/goals/add/{user_id}/{text}")
-def add_goal(user_id, text):
+@app.post("/goals/add/{user_id}")
+def add_goal(user_id: int, goals: List[str]):
     conn = psycopg2.connect(db.databaseURL)
     cursor = conn.cursor()
-    cursor.execute(
-        """
-        UPDATE goals
-        SET goal_array = array_append(goal_array, %s)
-        WHERE id = %s
-        """,
-        (text, user_id)
-    )
+
+    for goal in goals:
+        cursor.execute(
+            """
+            UPDATE goals
+            SET goal_array = array_append(COALESCE(goal_array, '{}'), %s)
+            WHERE id = %s
+            """,
+            (goal, user_id)
+        )
+
     conn.commit()
     cursor.close()
     conn.close()
-    return {"message": "Goal added to array"}
+
+    return {"message": "Goals added to array"}
 
 @app.get("/goals/{user_id}")
 def get_goals(user_id):
