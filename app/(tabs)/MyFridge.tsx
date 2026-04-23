@@ -21,8 +21,8 @@ const MyFridge = () => {
     const endpoint = `/pantry/${userId || "1"}`;
 
     useEffect(() => {
-        console.log("Fetching pantry from:", `${EXPO_PUBLIC_API_URL}${endpoint}`); //Debug
-        fetch(`${EXPO_PUBLIC_API_URL}${endpoint}`)
+        console.log("Fetching pantry from:", `${API_BASE_URL}${endpoint}`); //Debug
+        fetch(`${API_BASE_URL}${endpoint}`)
             .then((res) => {
                 console.log("Response status:", res.status); //Debug
                 return res.json();
@@ -37,7 +37,7 @@ const MyFridge = () => {
     }, []);
 
     return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
         <Text style={styles.title}>My Pantry</Text>
 
         <FlatList
@@ -49,7 +49,7 @@ const MyFridge = () => {
             </Text>
         )}
         />
-    </View>
+    </SafeAreaView>
     );
 };
 

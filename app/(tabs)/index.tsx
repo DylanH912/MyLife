@@ -11,8 +11,6 @@ import {
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import { useLocalSearchParams } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Tabs() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -25,7 +23,7 @@ export default function Tabs() {
   const [loading, setLoading] = useState(false); // Added loading state
   const [permission, requestPermission] = useCameraPermissions();
 
-  const EXPO_PUBLIC_API_URL = "http://140.104.37.114:8000";
+  const EXPO_PUBLIC_API_URL = "http://140.104.38.113:8000";
 
   const toggleMode = () => {
     setMode((prev) => (prev === "food" ? "receipt" : "food"));
@@ -67,7 +65,7 @@ export default function Tabs() {
 
       const endpoint = mode === "food" ? "/food" : "/receipt";
 
-      const response = await fetch(`${EXPO_PUBLIC_API_URL}${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: "POST",
         body: formData,
         headers: {
@@ -109,10 +107,15 @@ export default function Tabs() {
       <CameraView style={StyleSheet.absoluteFill} ref={cameraRef} facing="back" />
 
       <View style={styles.controls}>
-        {photoUri && <Image source={{ uri: photoUri }} style={styles.preview} />}
+        {photoUri && (
+          <Image
+            source={{ uri: photoUri }}
+            style={[styles.preview, { top: insets.top + 16 }]}
+          />
+        )}
 
         <TouchableOpacity 
-          style={styles.toggleButton} 
+          style={[styles.toggleButton, { top: insets.top + 16 }]} 
           onPress={toggleMode}
           disabled={loading}
         >
@@ -124,7 +127,11 @@ export default function Tabs() {
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={[styles.cameraButton, loading && { backgroundColor: '#ddd' }]} 
+          style={[
+            styles.cameraButton,
+            { bottom: insets.bottom + 24 },
+            loading && { backgroundColor: "#ddd" },
+          ]} 
           onPress={takePicture}
           disabled={loading}
         >
@@ -144,7 +151,6 @@ const styles = StyleSheet.create({
   controls: { flex: 1, backgroundColor: "transparent" },
   cameraButton: {
     position: "absolute",
-    bottom: 24,
     alignSelf: "center",
     padding: 20, // Bigger hit area
     backgroundColor: "rgba(255,255,255,0.9)",
@@ -152,7 +158,6 @@ const styles = StyleSheet.create({
   },
   toggleButton: {
     position: "absolute",
-    top: 60,
     right: 20,
     padding: 10,
     backgroundColor: "rgba(255,255,255,0.9)",
@@ -160,7 +165,6 @@ const styles = StyleSheet.create({
   },
   preview: {
     position: "absolute",
-    top: 60,
     left: 20,
     width: 100,
     height: 100,
