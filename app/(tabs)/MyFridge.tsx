@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
-
-const EXPO_PUBLIC_API_URL = "http://140.104.38.113:8000"; // CHANGE: Use your machine's local IP address and port where FastAPI is running
+import { SafeAreaView } from "react-native-safe-area-context";
+import { API_BASE_URL } from "../../lib/api";
 
 type PantryItem = {
     food_name: string;
@@ -14,8 +14,8 @@ const MyFridge = () => {
     const endpoint = "/pantry";
 
     useEffect(() => {
-        console.log("Fetching pantry from:", `${EXPO_PUBLIC_API_URL}${endpoint}`); //Debug
-        fetch(`${EXPO_PUBLIC_API_URL}${endpoint}`)
+        console.log("Fetching pantry from:", `${API_BASE_URL}${endpoint}`); //Debug
+        fetch(`${API_BASE_URL}${endpoint}`)
             .then((res) => {
                 console.log("Response status:", res.status); //Debug
                 return res.json();
@@ -30,7 +30,7 @@ const MyFridge = () => {
     }, []);
 
     return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
         <Text style={styles.title}>My Pantry</Text>
 
         <FlatList
@@ -42,7 +42,7 @@ const MyFridge = () => {
             </Text>
         )}
         />
-    </View>
+    </SafeAreaView>
     );
 };
 

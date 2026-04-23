@@ -10,8 +10,8 @@
     "ios": {
       "icon": "./assets/images/icon.png",
       "bundleIdentifier": "com.anonymous.MyLife",
-      "NSCameraUsageDescription": "This app needs camera access to take photos.",
       "infoPlist": {
+        "NSCameraUsageDescription": "This app needs camera access to take photos.",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         }
@@ -23,8 +23,7 @@
         "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.MyLife",
-      "usesCleartextTraffic": true
+      "package": "com.anonymous.MyLife"
     },
     "web": {
       "output": "static",

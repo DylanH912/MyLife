@@ -11,16 +11,16 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-
-const API_BASE = "http://140.104.37.131:8000";
+import { API_BASE_URL } from "../lib/api";
 
 async function apiRegister(email: string, password: string) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), 5000);
-  const res = await fetch(`${API_BASE}/register`, {
+  const res = await fetch(`${API_BASE_URL}/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ email, password }),
+    signal: controller.signal,
   });
   clearTimeout(id);
   const data = await res.json();
@@ -31,12 +31,13 @@ async function apiRegister(email: string, password: string) {
 async function apiLogin(email: string, password: string) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), 5000);
-  const res = await fetch(`${API_BASE}/login`, {
+  const res = await fetch(`${API_BASE_URL}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
+    signal: controller.signal,
   });
-  
+  clearTimeout(id);
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail ?? "Login failed.");
   return data;
