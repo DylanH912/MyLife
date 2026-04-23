@@ -158,7 +158,6 @@ def save_pantry_item(food_name, quantity, userId):
 def get_pantry_items(userId: int):
     print ("pantry endpoint hit") #Debug
 
-    userId = int(userId.strip()) if userId and userId.strip().isdigit() else None
     conn = psycopg2.connect(db.databaseURL)
     cursor = conn.cursor()
     cursor.execute("SELECT food_name, quantity FROM pantry where user_id = %s", (userId,))

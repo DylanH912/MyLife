@@ -13,11 +13,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_BASE_URL = "http://140.104.37.131:8000";
+const API_BASE_URL = "http://140.104.36.1:8000";
 
 async function apiRegister(email: string, password: string) {
   const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), 5000);
+  const id = setTimeout(() => controller.abort(), 10000);
   const res = await fetch(`${API_BASE_URL}/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -32,7 +32,7 @@ async function apiRegister(email: string, password: string) {
 
 async function apiLogin(email: string, password: string) {
   const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), 5000);
+  const id = setTimeout(() => controller.abort(), 10000);
   const res = await fetch(`${API_BASE_URL}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

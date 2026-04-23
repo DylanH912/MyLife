@@ -26,7 +26,7 @@ export default function Tabs() {
   const [loading, setLoading] = useState(false); // Added loading state
   const [permission, requestPermission] = useCameraPermissions();
 
-  const API_BASE_URL = "http://140.104.38.113:8000";
+  const API_BASE_URL = "http://140.104.36.1:8000";
 
   const toggleMode = () => {
     setMode((prev) => (prev === "food" ? "receipt" : "food"));
