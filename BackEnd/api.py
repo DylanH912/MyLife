@@ -207,3 +207,52 @@ def delete_pantry_item(food_name: str, amount: int):
     cursor.close()
     conn.close()
     return {"message": message}
+
+@app.delete("/goals/remove/{user_id}/{text}")
+def remove_goal(user_id, text):
+    conn = psycopg2.connect(db.databaseURL)
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        UPDATE goals
+        SET goal_array = array_remove(goal_array, %s)
+        WHERE id = %s
+        """,
+        (text, user_id)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "Goal removed from array"}
+
+@app.post("/goals/add/{user_id}/{text}")
+def add_goal(user_id, text):
+    conn = psycopg2.connect(db.databaseURL)
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        UPDATE goals
+        SET goal_array = array_append(goal_array, %s)
+        WHERE id = %s
+        """,
+        (text, user_id)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "Goal added to array"}
+
+@app.get("/goals/{user_id}")
+def get_goals(user_id):
+    conn = psycopg2.connect(db.databaseURL)
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT goal_array FROM goals WHERE id = %s",
+        (user_id,)
+    )
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if result is None:
+        return {"message": "No goals found"}
+    return {"goals": result[0]}
