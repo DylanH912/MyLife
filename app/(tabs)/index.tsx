@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Tabs() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -18,12 +20,13 @@ export default function Tabs() {
     AsyncStorage.getItem("userId").then(setUserId);
 }, []);
   const cameraRef = useRef<any>(null);
+  const insets = useSafeAreaInsets();
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [mode, setMode] = useState<"food" | "receipt">("food");
   const [loading, setLoading] = useState(false); // Added loading state
   const [permission, requestPermission] = useCameraPermissions();
 
-  const EXPO_PUBLIC_API_URL = "http://140.104.38.113:8000";
+  const API_BASE_URL = "http://140.104.38.113:8000";
 
   const toggleMode = () => {
     setMode((prev) => (prev === "food" ? "receipt" : "food"));
