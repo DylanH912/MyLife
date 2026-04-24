@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Text,
   ScrollView,
@@ -14,6 +14,10 @@ import ProgressGoalsModal, {
   GoalKey,
   deriveNutritionTargets,
 } from "../../components/ProgressGoalsModal";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// ← Set your API base URL here
+const API_BASE_URL = "http://140.104.36.1:8000";
 
 type NutritionMetric = {
   key: string;
@@ -34,31 +38,13 @@ type CalorieEntry = {
   calories: number;
 };
 
+// Static nutrition data (non-calorie macros still from DB mock)
 const todayNutritionFromDb = {
-  calories: 1820,
   protein: 126,
   carbs: 198,
   fat: 58,
   fiber: 24,
 };
-
-const calorieHistoryFromDb: CalorieEntry[] = [
-  { date: "Apr 1", calories: 1740 },
-  { date: "Apr 2", calories: 1890 },
-  { date: "Apr 3", calories: 1810 },
-  { date: "Apr 4", calories: 1930 },
-  { date: "Apr 5", calories: 1770 },
-  { date: "Apr 6", calories: 1820 },
-];
-
-const initialWeightHistoryFromDb: WeightEntry[] = [
-  { date: "Apr 1", weight: 187.4 },
-  { date: "Apr 2", weight: 186.9 },
-  { date: "Apr 3", weight: 186.8 },
-  { date: "Apr 4", weight: 186.3 },
-  { date: "Apr 5", weight: 186.1 },
-  { date: "Apr 6", weight: 185.9 },
-];
 
 const goalLabels: Record<GoalKey, string> = {
   maintain: "Maintain Weight",
@@ -197,15 +183,10 @@ function LollipopChart({
     const y =
       top + (1 - (value - minValue) / range) * (chartHeight - top - bottom);
 
-    return {
-      x,
-      y,
-      value,
-      label: String(item.date),
-    };
+    return { x, y, value, label: String(item.date) };
   });
 
-  const polylinePoints = points.map((point) => `${point.x},${point.y}`).join(" ");
+  const polylinePoints = points.map((p) => `${p.x},${p.y}`).join(" ");
 
   return (
     <Svg width="100%" height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
@@ -264,9 +245,7 @@ function LollipopChart({
 }
 
 export default function ProgressionScreen() {
-  const [weightHistory, setWeightHistory] = useState<WeightEntry[]>(
-    initialWeightHistoryFromDb
-  );
+  const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
   const [showWeightEntry, setShowWeightEntry] = useState(false);
   const [weightInput, setWeightInput] = useState("");
   const [showGoalsModal, setShowGoalsModal] = useState(false);
@@ -276,6 +255,120 @@ export default function ProgressionScreen() {
     "fiber",
     "consistency",
   ]);
+
+  // ── Real data state ──────────────────────────────────────────────────────────
+  const [userId, setUserId] = useState<string | null>(null);
+    useEffect(() => {
+      AsyncStorage.getItem("userId").then(setUserId);
+    }, []);
+  const [todayCalories, setTodayCalories] = useState(0);
+  const [calorieHistory, setCalorieHistory] = useState<CalorieEntry[]>([]);
+  // ────────────────────────────────────────────────────────────────────────────
+
+  // Fetch today's calories
+  // API: GET /daily-calories?userId={userId}&date={date}
+  // Returns: { userId, date, totalCalories }
+  useEffect(() => {
+    const fetchTodayCalories = async () => {
+      if (!userId) return;
+
+      const todayStr = formatTodayLabel(); // "Apr 6"
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/daily-calories?userId=${userId}&date=${encodeURIComponent(todayStr)}`
+        );
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        setTodayCalories(data.totalCalories ?? 0);
+      } catch (error) {
+        console.error("Failed to fetch today's calories:", error);
+      }
+    };
+
+    fetchTodayCalories();
+  }, [userId]);
+
+  // Fetch calorie history for the chart — calls /daily-calories for each of the last 7 days
+  useEffect(() => {
+    const fetchCalorieHistory = async () => {
+      if (!userId) return;
+
+      const entries: CalorieEntry[] = [];
+
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+
+        const dateStr = d.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }); // "Apr 6"
+
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/daily-calories?userId=${userId}&date=${encodeURIComponent(dateStr)}`
+          );
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          entries.push({ date: dateStr, calories: data.totalCalories ?? 0 });
+        } catch (error) {
+          console.error(`Failed to fetch calories for ${dateStr}:`, error);
+          entries.push({ date: dateStr, calories: 0 });
+        }
+      }
+
+      setCalorieHistory(entries);
+    };
+
+    fetchCalorieHistory();
+  }, [userId]);
+
+  // Fetch weight history for the last 7 days
+  // API: GET /daily-weight?userId={userId}&date={date}
+  // Returns: { userId, date, weight } — weight is null if no entry logged that day
+  // Missing days carry forward the last known weight so the chart never gaps
+  useEffect(() => {
+    const fetchWeightHistory = async () => {
+      if (!userId) return;
+
+      const entries: WeightEntry[] = [];
+      let lastKnownWeight: number | null = null;
+
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+
+        const dateStr = d.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }); // "Apr 6"
+
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/daily-weight?userId=${userId}&date=${encodeURIComponent(dateStr)}`
+          );
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+
+          if (data.weight !== null && data.weight !== undefined) {
+            lastKnownWeight = data.weight;
+          }
+        } catch (error) {
+          console.error(`Failed to fetch weight for ${dateStr}:`, error);
+        }
+
+        // Only push once we have at least one real weight to anchor from
+        if (lastKnownWeight !== null) {
+          entries.push({ date: dateStr, weight: lastKnownWeight });
+        }
+      }
+
+      setWeightHistory(entries);
+    };
+
+    fetchWeightHistory();
+  }, [userId]);
 
   const nutritionTargets = useMemo(
     () => deriveNutritionTargets(selectedGoals),
@@ -302,7 +395,7 @@ export default function ProgressionScreen() {
     {
       key: "calories",
       label: "Calories",
-      consumed: todayNutritionFromDb.calories,
+      consumed: todayCalories, // ← live from API
       target: nutritionTargets.calories,
       unit: "",
       color: "#14213D",
@@ -330,38 +423,20 @@ export default function ProgressionScreen() {
   const sideMetricsBottom = metrics.slice(3, 5);
 
   const averageCalories = useMemo(() => {
-    if (!calorieHistoryFromDb.length) return 0;
-    const total = calorieHistoryFromDb.reduce(
-      (sum, item) => sum + item.calories,
-      0
-    );
-    return Math.round(total / calorieHistoryFromDb.length);
-  }, []);
+    if (!calorieHistory.length) return 0;
+    const total = calorieHistory.reduce((sum, item) => sum + item.calories, 0);
+    return Math.round(total / calorieHistory.length);
+  }, [calorieHistory]);
 
   const latestWeight =
     weightHistory.length > 0 ? weightHistory[weightHistory.length - 1].weight : null;
 
   const healthScore = useMemo(() => {
-    const caloriesScore = getSmartMetricScore(
-      todayNutritionFromDb.calories,
-      nutritionTargets.calories
-    );
-    const proteinScore = getSmartMetricScore(
-      todayNutritionFromDb.protein,
-      nutritionTargets.protein
-    );
-    const carbsScore = getSmartMetricScore(
-      todayNutritionFromDb.carbs,
-      nutritionTargets.carbs
-    );
-    const fatScore = getSmartMetricScore(
-      todayNutritionFromDb.fat,
-      nutritionTargets.fat
-    );
-    const fiberScore = getSmartMetricScore(
-      todayNutritionFromDb.fiber,
-      nutritionTargets.fiber
-    );
+    const caloriesScore = getSmartMetricScore(todayCalories, nutritionTargets.calories);
+    const proteinScore = getSmartMetricScore(todayNutritionFromDb.protein, nutritionTargets.protein);
+    const carbsScore = getSmartMetricScore(todayNutritionFromDb.carbs, nutritionTargets.carbs);
+    const fatScore = getSmartMetricScore(todayNutritionFromDb.fat, nutritionTargets.fat);
+    const fiberScore = getSmartMetricScore(todayNutritionFromDb.fiber, nutritionTargets.fiber);
 
     const consistencyWeight = selectedGoals.includes("consistency") ? 0.14 : 0.08;
     const baseWeighted =
@@ -371,19 +446,17 @@ export default function ProgressionScreen() {
       fatScore * 0.14 +
       fiberScore * 0.16;
 
-    const consistencyScore = Math.round(
-      clamp(calorieHistoryFromDb.length / 7) * 100
-    );
+    const consistencyScore = Math.round(clamp(calorieHistory.length / 7) * 100);
 
     return Math.round(baseWeighted + consistencyScore * consistencyWeight);
-  }, [nutritionTargets, selectedGoals]);
+  }, [nutritionTargets, selectedGoals, todayCalories, calorieHistory]);
 
   const goodHabits = useMemo(() => {
     const habits: string[] = [];
 
     if (
-      todayNutritionFromDb.calories >= nutritionTargets.calories * 0.9 &&
-      todayNutritionFromDb.calories <= nutritionTargets.calories * 1.1
+      todayCalories >= nutritionTargets.calories * 0.9 &&
+      todayCalories <= nutritionTargets.calories * 1.1
     ) {
       habits.push("Stayed close to the calorie goal selected for today.");
     }
@@ -396,7 +469,7 @@ export default function ProgressionScreen() {
       habits.push("Fiber intake is supporting a strong day overall.");
     }
 
-    if (calorieHistoryFromDb.length >= 5) {
+    if (calorieHistory.length >= 5) {
       habits.push("Nutrition logging has been consistent across the week.");
     }
 
@@ -407,16 +480,16 @@ export default function ProgressionScreen() {
     return habits.length
       ? habits
       : ["You logged your intake today, which is a strong start."];
-  }, [nutritionTargets, weightHistory]);
+  }, [nutritionTargets, weightHistory, todayCalories, calorieHistory]);
 
   const improvements = useMemo(() => {
     const items: string[] = [];
 
-    if (todayNutritionFromDb.calories < nutritionTargets.calories * 0.9) {
+    if (todayCalories < nutritionTargets.calories * 0.9) {
       items.push("Calories are below the selected target range for today.");
     }
 
-    if (todayNutritionFromDb.calories > nutritionTargets.calories * 1.1) {
+    if (todayCalories > nutritionTargets.calories * 1.1) {
       items.push("Calories are above the selected target range for today.");
     }
 
@@ -439,7 +512,7 @@ export default function ProgressionScreen() {
     return items.length
       ? items
       : ["No major issues stand out today. Keep repeating these habits."];
-  }, [nutritionTargets, weightHistory]);
+  }, [nutritionTargets, weightHistory, todayCalories]);
 
   const goalSummary = selectedGoals.map((goal) => goalLabels[goal]);
 
@@ -510,7 +583,7 @@ export default function ProgressionScreen() {
           </View>
 
           <View style={styles.summaryCard}>
-            <Text style={styles.summaryTitle}>Today’s nutrition breakdown</Text>
+            <Text style={styles.summaryTitle}>Today's nutrition breakdown</Text>
 
             <View style={styles.donutGrid}>
               <View style={styles.sideColumn}>
@@ -594,12 +667,16 @@ export default function ProgressionScreen() {
             ) : null}
 
             <View style={styles.chartWrap}>
-              <LollipopChart
-                data={weightHistory}
-                valueKey="weight"
-                lineColor="#4E6FAE"
-                valueSuffix=" lb"
-              />
+              {weightHistory.length > 0 ? (
+                <LollipopChart
+                  data={weightHistory}
+                  valueKey="weight"
+                  lineColor="#4E6FAE"
+                  valueSuffix=" lb"
+                />
+              ) : (
+                <Text style={styles.summaryHint}>Loading weight history...</Text>
+              )}
             </View>
           </View>
 
@@ -607,15 +684,21 @@ export default function ProgressionScreen() {
             <Text style={styles.summaryTitle}>Average calories</Text>
             <Text style={styles.summaryHint}>
               Weekly average:{" "}
-              <Text style={styles.summaryHintBold}>{averageCalories} cal</Text>
+              <Text style={styles.summaryHintBold}>
+                {averageCalories > 0 ? `${averageCalories} cal` : "Loading..."}
+              </Text>
             </Text>
 
             <View style={styles.chartWrap}>
-              <LollipopChart
-                data={calorieHistoryFromDb}
-                valueKey="calories"
-                lineColor="#D99A00"
-              />
+              {calorieHistory.length > 0 ? (
+                <LollipopChart
+                  data={calorieHistory}
+                  valueKey="calories"
+                  lineColor="#D99A00"
+                />
+              ) : (
+                <Text style={styles.summaryHint}>Loading calorie history...</Text>
+              )}
             </View>
           </View>
 

@@ -117,11 +117,17 @@ const takePicture = async () => {
 
       const classifyEndpoint = `/food`;
 
+      const todayStr = new Date().toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      }); // "Apr 23" - same exact string you want
+
       const response = await fetch(`${API_BASE_URL}${classifyEndpoint}`, {
         method: "POST",
         body: formData,
         headers: {
           Accept: "application/json",
+          'X-Date': todayStr, // "Apr 23"
         },
       });
 
@@ -137,9 +143,8 @@ const takePicture = async () => {
         setIsPromptOpen(true);
       } else {
         Alert.alert("Server Error", JSON.stringify(data, null, 2));
+        }
       }
-    }
-   
     else if (mode === "receipt") {
       const formData = new FormData();
       formData.append("file", {

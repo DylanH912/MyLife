@@ -147,7 +147,7 @@ async def classify_food(
 
 
 
-def get_nutritional_info(food_name: str, user_id: int):
+def get_nutritional_info(food_name: str, user_id: int, date: str):
     spoon_api_key = os.getenv("SPOON_API_KEY")
     if not spoon_api_key:
         raise HTTPException(status_code=500, detail="Missing SPOON_API_KEY")
@@ -171,7 +171,7 @@ def get_nutritional_info(food_name: str, user_id: int):
     fat = data.get("fat", {}).get("value", 0)
 
     if calories > 0 or protein > 0:
-        return post_nutritional_info(food_name, calories, protein, fat, carbs, user_id)
+        return post_nutritional_info(food_name, calories, protein, fat, carbs, user_id, date)
     else:
         return False
 
@@ -182,7 +182,8 @@ def post_nutritional_info(
     protein: float,
     fat: float,
     carbs: float,
-    user_id: int
+    user_id: int,
+    date: str
 ):
     conn = psycopg2.connect(db.databaseURL)
     cursor = conn.cursor()
@@ -190,10 +191,10 @@ def post_nutritional_info(
     # Insert into nutrition table
     cursor.execute(
         """
-        INSERT INTO nutrition (food_name, calories, protein, fat, carbs, user_id)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        INSERT INTO nutrition (food_name, calories, protein, fat, carbs, user_id, date)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
         """,
-        (food_name, calories, protein, fat, carbs, user_id)
+        (food_name, calories, protein, fat, carbs, user_id, date)
     )
 
     conn.commit()
@@ -209,6 +210,7 @@ class FoodUploadRequest(BaseModel):
     mode: str
     userId: str
     food_name: str
+    date: str
 
 @app.post("/food/upload")
 async def upload_food(
@@ -223,13 +225,16 @@ async def upload_food(
     if not parsed_user_id:
         raise HTTPException(status_code=400, detail="Invalid or missing userId")
 
-    # Use the user‑confirmed food name
-    success = get_nutritional_info(request.food_name, parsed_user_id)
+    # Use date from frontend ("Apr 23")
+    log_date = request.date
+    
+    # Use the user-confirmed food name + date
+    success = get_nutritional_info(request.food_name, parsed_user_id, log_date)
 
     if success:
         return {
             "success": True,
-            "message": f"Nutritional info for '{request.food_name}' saved.",
+            "message": f"Nutritional info for '{request.food_name}' saved for {log_date}.",
             "food_name": request.food_name,
         }
     else:
@@ -404,3 +409,69 @@ def delete_pantry_item(food_name: str):
     conn.close()
 
     return {"message": message}
+
+@app.get("/daily-calories")
+async def get_daily_calories(userId: str, date: str):
+    if userId.strip().isdigit():
+        parsed_user_id = int(userId.strip())
+    
+    if not parsed_user_id:
+        raise HTTPException(status_code=400, detail="Invalid userId")
+    
+    # query your DB - replace with your actual table/query
+    total_calories = get_user_daily_calories(parsed_user_id, date)
+    
+    return {
+        "userId": userId,
+        "date": date,
+        "totalCalories": total_calories or 0
+    }
+
+def get_user_daily_calories(user_id: int, date_str: str):
+    
+    conn = psycopg2.connect(db.databaseURL)
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT SUM(calories) FROM nutrition
+        WHERE user_id = %s AND date = %s
+        """,
+        (user_id, date_str)
+    )
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    return result[0] if result and result[0] is not None else 0
+
+@app.get("/daily-weight")
+async def get_daily_weight(userId: str, date: str):
+    if userId.strip().isdigit():
+        parsed_user_id = int(userId.strip())
+
+    if not parsed_user_id:
+        raise HTTPException(status_code=400, detail="Invalid userId")
+
+    weight = get_user_daily_weight(parsed_user_id, date)
+
+    return {
+        "userId": userId,
+        "date": date,
+        "weight": weight  # None if no entry that day
+    }
+
+def get_user_daily_weight(user_id: int, date_str: str):
+    conn = psycopg2.connect(db.databaseURL)
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT weight FROM usergoals
+        WHERE user_id = %s AND date = %s
+        """,
+        (user_id, date_str)
+    )
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    return result[0] if result and result[0] is not None else None
