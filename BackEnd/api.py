@@ -39,63 +39,150 @@ def login_user(user: UserAuth): # FIXED: Uses the UserAuth model
 
 
 @app.post("/food")
-async def food(file: UploadFile = File(...), mode: str = Form(...), userId: str = Form(...)): # FIXED: Now accepts a real file upload
-    endpoint = f"https://api.spoonacular.com/food/images/classify?apiKey={os.getenv('SPOON_API_KEY')}"    
-    content = await file.read()
-    # Spoonacular expects the parameter name to be 'file'
-    files = {"file": (file.filename, content, file.content_type)}
-    
+async def classify_food(
+    file: UploadFile = File(...),
+    mode: str = Form(...),
+    userId: str = Form(...)
+):
+    spoon_api_key = os.getenv("SPOON_API_KEY")
+    if not spoon_api_key:
+        raise HTTPException(status_code=500, detail="Missing SPOON_API_KEY")
+
+    endpoint = f"https://api.spoonacular.com/food/images/classify?apiKey={spoon_api_key}"
+
     try:
-        response = requests.post(endpoint, files=files)
-        print(response.text) # DEBUG: Print the raw response from Spoonacular
-        response.raise_for_status()
-        parsed_response = response.json()
-        category = parsed_response.get("category", "Unknown")
-        probability = parsed_response.get("probability", 0)
-        if category == "Unknown" or probability < 0.5:
-            print("Low confidence in category prediction, returning 'Unknown'")
-            return False # DEBUG: Log low confidence cases
-        else:
-            return (get_nutritional_info(category, userId))
+        content = await file.read()
+        files = {"file": (file.filename, content, file.content_type)}
+
+        spoon_response = requests.post(endpoint, files=files)
+        print("=== SPOONACULAR RAW RESPONSE ===")
+        print(spoon_response.text)
+        print("=== END SPOONACULAR RESPONSE ===")
+
+        spoon_response.raise_for_status()
+        parsed = spoon_response.json()
+
+        category = parsed.get("category", "Unknown")
+        probability = parsed.get("probability", 0.0)
+
+        if category == "Unknown" or probability < 0.8:
+            return {
+                "status": "uncertain",
+                "message": "Low confidence in prediction.",
+                "success": False
+            }
+
+        # All good: send back what the front‑end expects
+        return {
+            "status": "success",
+            "message": f"Detected as '{category}'",
+            "category": category,
+            "probability": probability,
+            "success": True
+        }
+
     except Exception as e:
-        # This will show you the real error from Spoonacular if it fails
-        detail = response.text if 'response' in locals() else str(e)
+        detail = spoon_response.text if 'spoon_response' in locals() else str(e)
         raise HTTPException(status_code=500, detail=detail)
-    
-def get_nutritional_info(food_name, userId):
-    print("In get_nutritional_info") # DEBUG: Log entry into the function
-    endpoint = f"https://api.spoonacular.com/recipes/guessNutrition?title={food_name}&apiKey={os.getenv('SPOON_API_KEY')}"
+
+
+# ======================
+# 2. NUTRITION HELPER: guess + save to DB
+# ======================
+
+def get_nutritional_info(food_name: str, user_id: int):
+    spoon_api_key = os.getenv("SPOON_API_KEY")
+    if not spoon_api_key:
+        raise HTTPException(status_code=500, detail="Missing SPOON_API_KEY")
+
+    endpoint = (
+        f"https://api.spoonacular.com/recipes/guessNutrition"
+        f"?title={food_name}&apiKey={spoon_api_key}"
+    )
+
     response = requests.get(endpoint)
-    print(response.text) # DEBUG: Print the raw response from Spoonacular for nutritional info
+    print("=== SPOONACULAR NUTRITION RESPONSE ===")
+    print(response.text)
+    print("=== END NUTRITION RESPONSE ===")
+
     response.raise_for_status()
     data = response.json()
+
     calories = data.get("calories", {}).get("value", 0)
     protein = data.get("protein", {}).get("value", 0)
     carbs = data.get("carbs", {}).get("value", 0)
     fat = data.get("fat", {}).get("value", 0)
-    if calories > 0 or protein > 0: # Basic check to see if we got valid nutritional info
-        print(f"Retrieved nutritional info for {food_name}: Calories={calories}, Protein={protein}, Fat={fat}, Carbs={carbs}") # DEBUG: Log retrieved nutritional info
-        return post_nutritional_info(food_name, calories, protein, fat, carbs, userId)
+
+    if calories > 0 or protein > 0:
+        return post_nutritional_info(food_name, calories, protein, fat, carbs, user_id)
     else:
-        print(f"No nutritional info found for {food_name}") # DEBUG: Log when no info is found
-        return False # Default values if no match found
-    
-def post_nutritional_info(food_name, calories, protein, fat, carbs, userId):
-    print("In post_nutritional_info")
-    print(f"current userId value: '{userId}'") # DEBUG: Log the raw userId value received
-    userId = int(userId.strip()) if userId and userId.strip().isdigit() else None
-    print(f"Posting nutritional info for userId: {userId}") # DEBUG: Log the userId being used
+        return False
+
+
+def post_nutritional_info(
+    food_name: str,
+    calories: float,
+    protein: float,
+    fat: float,
+    carbs: float,
+    user_id: int
+):
     conn = psycopg2.connect(db.databaseURL)
     cursor = conn.cursor()
+
+    # Insert into nutrition table
     cursor.execute(
-        "INSERT INTO nutrition (food_name, calories, protein, fat, carbs, user_id) VALUES (%s, %s, %s, %s, %s, %s)",
-        (food_name, calories, protein, fat, carbs, userId)
+        """
+        INSERT INTO nutrition (food_name, calories, protein, fat, carbs, user_id)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        """,
+        (food_name, calories, protein, fat, carbs, user_id)
     )
+
     conn.commit()
     cursor.close()
     conn.close()
-    print("Updated pantry with nutritional info") # DEBUG: Log database update
+
     return True
+
+
+# ======================
+# 3. UPLOAD ROUTE: receive user‑confirmed food name
+# ======================
+
+class FoodUploadRequest(BaseModel):
+    file_url: str  # or extra fields if you pass info
+    mode: str
+    userId: str
+    food_name: str
+
+@app.post("/food/upload")
+async def upload_food(
+    request: FoodUploadRequest
+):
+    user_id_str = request.userId
+    parsed_user_id: Optional[int] = None
+
+    if user_id_str and user_id_str.strip().isdigit():
+        parsed_user_id = int(user_id_str.strip())
+
+    if not parsed_user_id:
+        raise HTTPException(status_code=400, detail="Invalid or missing userId")
+
+    # Use the user‑confirmed food name
+    success = get_nutritional_info(request.food_name, parsed_user_id)
+
+    if success:
+        return {
+            "success": True,
+            "message": f"Nutritional info for '{request.food_name}' saved.",
+            "food_name": request.food_name,
+        }
+    else:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Could not retrieve nutrition data for '{request.food_name}'"
+        )
 
 
 @app.post("/receipt")
