@@ -81,27 +81,31 @@ export default function Tabs() {
     }
   };
 
-  const takePicture = async () => {
-    if (loading) return;
+const takePicture = async () => {
+  if (loading) return;
 
-    try {
-      if (!cameraRef.current) {
-        Alert.alert("Camera not ready");
-        return;
-      }
+  if (!cameraRef.current) {
+    Alert.alert("Camera not ready");
+    return;
+  }
 
-      setLoading(true);
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.5 });
+  setLoading(true);
 
-      if (!photo?.uri) {
-        setLoading(false);
-        Alert.alert("Error", "No photo captured");
-        return;
-      }
+  try {
+    const photo = await cameraRef.current.takePictureAsync({ quality: 0.5 });
 
-      setPhotoUri(photo.uri);
-      setCurrentPhoto(photo);
+    if (!photo?.uri) {
+      Alert.alert("Error", "No photo captured");
+      return;
+    }
 
+    setPhotoUri(photo.uri);
+    setCurrentPhoto(photo);
+
+    // -------------------
+    // FOOD mode: run food classifier and prompt
+    // -------------------
+    if (mode === "food") {
       const formData = new FormData();
       formData.append("file", {
         uri: photo.uri,
@@ -127,20 +131,52 @@ export default function Tabs() {
         const detected = data.category;
         setDetectedName(detected);
         setIsUncertain(false);
-        setIsPromptOpen(true); // instead of Alert.prompt
+        setIsPromptOpen(true);
       } else if (response.ok && data.status === "uncertain") {
         setIsUncertain(true);
-        setIsPromptOpen(true); // instead of Alert.prompt
+        setIsPromptOpen(true);
       } else {
         Alert.alert("Server Error", JSON.stringify(data, null, 2));
       }
-    } catch (err) {
-      console.error(err);
-      Alert.alert("Network Error", "Check server connection or IP address");
-    } finally {
-      setLoading(false);
     }
-  };
+   
+    else if (mode === "receipt") {
+      const formData = new FormData();
+      formData.append("file", {
+        uri: photo.uri,
+        name: "receipt.jpg",
+        type: "image/jpeg",
+      } as any);
+      formData.append("userId", userId ?? "1");
+
+      try {
+        const receiptResponse = await fetch(`${API_BASE_URL}/receipt`, {
+          method: "POST",
+          body: formData,
+          headers: {
+            // don't set Content-Type; let fetch set multipart boundary
+          },
+        });
+
+        const receiptData = await receiptResponse.json();
+
+        if (receiptResponse.ok) {
+          Alert.alert("Receipt processed", JSON.stringify(receiptData, null, 2));
+        } else {
+          Alert.alert("Receipt failed", JSON.stringify(receiptData, null, 2));
+        }
+      } catch (err) {
+        console.error(err);
+        Alert.alert("Network Error", "Check receipt‑server connection or IP address");
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    Alert.alert("Network Error", "Check server connection or IP address");
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (!permission) return null;
 
