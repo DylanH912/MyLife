@@ -1,12 +1,12 @@
 -npm install expo
 -npm install react-native-camera
 -npm install react-native-vision-camera
--npm audit fix
 -npm run ios or android
 -npm install react-native-worklets-core
 -npm install react-native-svg
 -npx expo install expo-media-library
 -npx expo prebuild
+-npm audit fix
 
 
 iphone 
@@ -17,20 +17,6 @@ pip install psycopg2
 pip install hashlib
 pip install sqlalchemy
 pip install fastAPI
-
-
-Sutton fastAPI
-python3 -m venv venv
-source venv/bin/activate   
-python3 -m pip install "fastapi[standard]"
-cd BackEnd
-python3 -m pip install sqlalchemy
-pip install psycopg2-binary
-pip install requests 
-python -m fastapi run api.py
-
-
-
 
 python -m fastapi run api.py --host 0.0.0.0 --port 8000
 python -m uvicorn api:app --host 0.0.0.0 --port 8000          //run uvicorn with app instead of fastapi
